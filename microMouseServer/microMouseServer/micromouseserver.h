@@ -3,6 +3,7 @@
 #include "mazeConst.h"
 #include "mazeBase.h"
 #include "mazegui.h"
+#include "mazecell.h"
 #include <QMainWindow>
 #include <QGraphicsScene>
 #include <QGraphicsView>
@@ -11,7 +12,6 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QLineF>
 #include <QTimer>
-#include "networkinterface.h"
 
 
 
@@ -26,7 +26,6 @@ class microMouseServer : public QMainWindow
 public:
     explicit microMouseServer(QWidget *parent = 0);
     ~microMouseServer();
-    networkInterface bridge;
 
 private slots:
     void on_tabWidget_tabBarClicked(int index);
@@ -53,6 +52,12 @@ private:
     bool moveForward();
     void turnLeft();
     void turnRight();
+    void moveLeft();
+    void moveRight();
+    void moveBack();
+    void assignWalls();
+    void leftHandRule();
+    void checkExit(int xValue, int yValue);
 
     QTimer *_comTimer;
     QTimer *_aiCallTimer;

@@ -16,15 +16,14 @@ SOURCES += mazegui.cpp\
         main.cpp \
         micromouseserver.cpp \
     mazeBase.cpp \
-    networkinterface.cpp
+    mazecell.cpp
 
 
 HEADERS  += micromouseserver.h \
     mazeConst.h \
     mazeBase.h \
     mazegui.h \
-    networkinterface.h
+    mazecell.h
 
 FORMS    += micromouseserver.ui
 
-win32:LIBS += -lWS2_32
