@@ -587,16 +587,16 @@ void microMouseServer::assignWalls() { //assigns the walls based on the directio
         myData[xPosition][yPosition].amount = -1;
     }
     else if (((isWallForward() && isWallLeft()) || (isWallForward() && isWallRight()) || (isWallLeft() && isWallRight())) && (direction % 4 == 0) && (myData[xPosition][yPosition-1].amount == -1))    {
-                myData[xPosition][yPosition].amount = -1;
+        myData[xPosition][yPosition].amount = -1;
     }
     else if (((isWallForward() && isWallLeft()) || (isWallForward() && isWallRight()) || (isWallLeft() && isWallRight())) && ((direction - 1) % 4 == 0) && (myData[xPosition-1][yPosition].amount == -1))    {
-            myData[xPosition][yPosition].amount = -1;
+        myData[xPosition][yPosition].amount = -1;
     }
     else if (((isWallForward() && isWallLeft()) || (isWallForward() && isWallRight()) || (isWallLeft() && isWallRight())) && ((direction - 2) % 4 == 0) && (myData[xPosition][yPosition+1].amount == -1))    {
-            myData[xPosition][yPosition].amount = -1;
+        myData[xPosition][yPosition].amount = -1;
     }
     else if (((isWallForward() && isWallLeft()) || (isWallForward() && isWallRight()) || (isWallLeft() && isWallRight())) && ((direction + 1) % 4 == 0) && (myData[xPosition+1][yPosition+1].amount == -1))    {
-            myData[xPosition][yPosition].amount = -1;
+        myData[xPosition][yPosition].amount = -1;
     }
     else    {
         myData[xPosition][yPosition].amount = myData[xPosition][yPosition].amount + 1;
