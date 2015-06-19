@@ -583,20 +583,35 @@ void microMouseServer::assignWalls() { //assigns the walls based on the directio
             myData[xPosition][yPosition].amount = myData[xPosition][yPosition].amount + 1;
         }
     }
-    else if (isWallLeft() && isWallForward() && isWallRight())   {
+    else if (isWallLeft() && isWallForward() && isWallRight())   {  //checking to see if this is the dead end
         myData[xPosition][yPosition].amount = -1;
     }
     else if (((isWallForward() && isWallLeft()) || (isWallForward() && isWallRight()) || (isWallLeft() && isWallRight())) && (direction % 4 == 0) && (myData[xPosition][yPosition-1].amount == -1))    {
-        myData[xPosition][yPosition].amount = -1;
+        myData[xPosition][yPosition].amount = -1;   //checks to see if this is the path leading to a dead end when facing forward
     }
     else if (((isWallForward() && isWallLeft()) || (isWallForward() && isWallRight()) || (isWallLeft() && isWallRight())) && ((direction - 1) % 4 == 0) && (myData[xPosition-1][yPosition].amount == -1))    {
-        myData[xPosition][yPosition].amount = -1;
+        myData[xPosition][yPosition].amount = -1;   //right
     }
     else if (((isWallForward() && isWallLeft()) || (isWallForward() && isWallRight()) || (isWallLeft() && isWallRight())) && ((direction - 2) % 4 == 0) && (myData[xPosition][yPosition+1].amount == -1))    {
-        myData[xPosition][yPosition].amount = -1;
+        myData[xPosition][yPosition].amount = -1;   //bottom
     }
     else if (((isWallForward() && isWallLeft()) || (isWallForward() && isWallRight()) || (isWallLeft() && isWallRight())) && ((direction + 1) % 4 == 0) && (myData[xPosition+1][yPosition+1].amount == -1))    {
-        myData[xPosition][yPosition].amount = -1;
+        myData[xPosition][yPosition].amount = -1;   //left
+    }
+    else if ((!myData[xPosition][yPosition].wallLeft && !myData[xPosition][yPosition].wallTop && !myData[xPosition][yPosition].wallRight && !myData[xPosition][yPosition].wallBottom) && (((myData[xPosition-1][yPosition].amount == -1) && (myData[xPosition][yPosition+1].amount == -1) && (myData[xPosition+1][yPosition+1].amount == -1) && (myData[xPosition][yPosition-1].amount != -1)) || ((myData[xPosition-1][yPosition].amount == -1) && (myData[xPosition][yPosition+1].amount == -1) && (myData[xPosition+1][yPosition+1].amount != -1) && (myData[xPosition][yPosition-1].amount == -1)) || ((myData[xPosition-1][yPosition].amount == -1) && (myData[xPosition][yPosition+1].amount != -1) && (myData[xPosition+1][yPosition+1].amount == -1) && (myData[xPosition][yPosition-1].amount == -1)) || ((myData[xPosition-1][yPosition].amount != -1) && (myData[xPosition][yPosition+1].amount == -1) && (myData[xPosition+1][yPosition+1].amount == -1) && (myData[xPosition][yPosition-1].amount == -1))))  {
+        myData[xPosition][yPosition].amount = -1;   //checking to see if an all of the intersections paths except one lead to dead ends
+    }
+    else if ((myData[xPosition][yPosition].wallLeft && !myData[xPosition][yPosition].wallTop && !myData[xPosition][yPosition].wallRight && !myData[xPosition][yPosition].wallBottom) && ((myData[xPosition][yPosition+1].amount == -1 && myData[xPosition+1][yPosition].amount == -1 && myData[xPosition][yPosition-1].amount != -1) || (myData[xPosition][yPosition+1].amount == -1 && myData[xPosition+1][yPosition].amount != -1 && myData[xPosition][yPosition+1].amount == -1) || (myData[xPosition][yPosition+1].amount != -1 && myData[xPosition+1][yPosition].amount == -1 && myData[xPosition][yPosition-1].amount == -1))) {
+        myData[xPosition][yPosition].amount = -1;   //checking to see if all the routes of a t-junction with no wall on the top, right and bottom except one lead to dead ends
+    }
+    else if ((!myData[xPosition][yPosition].wallLeft && myData[xPosition][yPosition].wallTop && !myData[xPosition][yPosition].wallRight && !myData[xPosition][yPosition].wallBottom) && ((myData[xPosition-1][yPosition].amount == -1 && myData[xPosition][yPosition-1].amount == -1 && myData[xPosition+1][yPosition].amount != -1) || (myData[xPosition-1][yPosition].amount == -1 && myData[xPosition][yPosition-1].amount != -1 && myData[xPosition+1][yPosition].amount == -1) || (myData[xPosition-1][yPosition].amount != -1 && myData[xPosition][yPosition-1].amount == -1 && myData[xPosition+1][yPosition].amount == -1))) {
+        myData[xPosition][yPosition].amount = -1;   //walls on left, down, right
+    }
+    else if ((!myData[xPosition][yPosition].wallLeft && !myData[xPosition][yPosition].wallTop && myData[xPosition][yPosition].wallRight && !myData[xPosition][yPosition].wallBottom) && ((myData[xPosition][yPosition+1].amount == -1 && myData[xPosition-1][yPosition].amount == -1 && myData[xPosition][yPosition-1].amount != -1) || (myData[xPosition][yPosition+1].amount == -1 && myData[xPosition-1][yPosition].amount != -1 && myData[xPosition][yPosition+1].amount == -1) || (myData[xPosition][yPosition+1].amount != -1 && myData[xPosition-1][yPosition].amount == -1 && myData[xPosition][yPosition-1].amount == -1))) {
+        myData[xPosition][yPosition].amount = -1;   //walls on top, left, bottom
+    }
+    else if ((!myData[xPosition][yPosition].wallLeft && !myData[xPosition][yPosition].wallTop && !myData[xPosition][yPosition].wallRight && myData[xPosition][yPosition].wallBottom) && ((myData[xPosition-1][yPosition].amount == -1 && myData[xPosition][yPosition+1].amount == -1 && myData[xPosition+1][yPosition].amount != -1) || (myData[xPosition-1][yPosition].amount == -1 && myData[xPosition][yPosition+1].amount != -1 && myData[xPosition+1][yPosition].amount == -1) || (myData[xPosition-1][yPosition].amount != -1 && myData[xPosition][yPosition+1].amount == -1 && myData[xPosition+1][yPosition].amount == -1))) {
+        myData[xPosition][yPosition].amount = -1;   //walls on left, top, right
     }
     else    {
         myData[xPosition][yPosition].amount = myData[xPosition][yPosition].amount + 1;
