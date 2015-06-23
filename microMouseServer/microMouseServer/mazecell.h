@@ -8,10 +8,6 @@ public:
     bool wallLeft, wallTop, wallRight, wallBottom;
     int amount;
     mazeCell();
-    void setLeftWall(bool val);
-    void setTopWall(bool val);
-    void setRightWall(bool val);
-    void setBottomWall(bool val);
 };
 
 #endif // MAZECELL_H

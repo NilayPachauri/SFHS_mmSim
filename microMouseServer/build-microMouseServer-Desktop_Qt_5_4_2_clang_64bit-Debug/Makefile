@@ -577,7 +577,6 @@ moc_micromouseserver.cpp: ../microMouseServer/mazeConst.h \
 		../../../../Qt/5.4/clang_64/lib/QtCore.framework/Versions/5/Headers/qpoint.h \
 		../../../../Qt/5.4/clang_64/lib/QtWidgets.framework/Versions/5/Headers/QStyleOptionGraphicsItem \
 		../../../../Qt/5.4/clang_64/lib/QtWidgets.framework/Versions/5/Headers/qstyleoption.h \
-		../microMouseServer/mazecell.h \
 		../../../../Qt/5.4/clang_64/lib/QtWidgets.framework/Versions/5/Headers/QMainWindow \
 		../../../../Qt/5.4/clang_64/lib/QtWidgets.framework/Versions/5/Headers/qmainwindow.h \
 		../../../../Qt/5.4/clang_64/lib/QtWidgets.framework/Versions/5/Headers/QGraphicsView \
@@ -675,7 +674,6 @@ main.o: ../microMouseServer/main.cpp ../microMouseServer/micromouseserver.h \
 		../../../../Qt/5.4/clang_64/lib/QtCore.framework/Versions/5/Headers/qpoint.h \
 		../../../../Qt/5.4/clang_64/lib/QtWidgets.framework/Versions/5/Headers/QStyleOptionGraphicsItem \
 		../../../../Qt/5.4/clang_64/lib/QtWidgets.framework/Versions/5/Headers/qstyleoption.h \
-		../microMouseServer/mazecell.h \
 		../../../../Qt/5.4/clang_64/lib/QtWidgets.framework/Versions/5/Headers/QMainWindow \
 		../../../../Qt/5.4/clang_64/lib/QtWidgets.framework/Versions/5/Headers/qmainwindow.h \
 		../../../../Qt/5.4/clang_64/lib/QtWidgets.framework/Versions/5/Headers/QGraphicsView \
@@ -710,7 +708,6 @@ micromouseserver.o: ../microMouseServer/micromouseserver.cpp ../microMouseServer
 		../../../../Qt/5.4/clang_64/lib/QtCore.framework/Versions/5/Headers/qpoint.h \
 		../../../../Qt/5.4/clang_64/lib/QtWidgets.framework/Versions/5/Headers/QStyleOptionGraphicsItem \
 		../../../../Qt/5.4/clang_64/lib/QtWidgets.framework/Versions/5/Headers/qstyleoption.h \
-		../microMouseServer/mazecell.h \
 		../../../../Qt/5.4/clang_64/lib/QtWidgets.framework/Versions/5/Headers/QMainWindow \
 		../../../../Qt/5.4/clang_64/lib/QtWidgets.framework/Versions/5/Headers/qmainwindow.h \
 		../../../../Qt/5.4/clang_64/lib/QtWidgets.framework/Versions/5/Headers/QGraphicsView \
@@ -727,7 +724,8 @@ micromouseserver.o: ../microMouseServer/micromouseserver.cpp ../microMouseServer
 		../../../../Qt/5.4/clang_64/lib/QtCore.framework/Versions/5/Headers/QFile \
 		../../../../Qt/5.4/clang_64/lib/QtCore.framework/Versions/5/Headers/qfile.h \
 		../../../../Qt/5.4/clang_64/lib/QtCore.framework/Versions/5/Headers/QTextStream \
-		../../../../Qt/5.4/clang_64/lib/QtCore.framework/Versions/5/Headers/qtextstream.h
+		../../../../Qt/5.4/clang_64/lib/QtCore.framework/Versions/5/Headers/qtextstream.h \
+		../microMouseServer/mazecell.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o micromouseserver.o ../microMouseServer/micromouseserver.cpp
 
 mazeBase.o: ../microMouseServer/mazeBase.cpp ../microMouseServer/mazeBase.h \

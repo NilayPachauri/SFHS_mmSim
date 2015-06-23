@@ -26,4 +26,3 @@ HEADERS  += micromouseserver.h \
     mazecell.h
 
 FORMS    += micromouseserver.ui
-

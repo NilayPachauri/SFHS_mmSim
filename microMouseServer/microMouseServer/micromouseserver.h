@@ -3,7 +3,6 @@
 #include "mazeConst.h"
 #include "mazeBase.h"
 #include "mazegui.h"
-#include "mazecell.h"
 #include <QMainWindow>
 #include <QGraphicsScene>
 #include <QGraphicsView>
@@ -50,14 +49,30 @@ private:
     bool isWallRight();
     bool isWallForward();
     bool moveForward();
+    void realMoveForward();
     void turnLeft();
     void turnRight();
+    void foundFinish();
+    void printUI(const char *mesg);
+
+    int leftAmount();
+    int topAmount();
+    int rightAmount();
+    int backAmount();
+
     void moveLeft();
     void moveRight();
     void moveBack();
+
+    int numberOfWalls();
+    void deadEnd();
+
+    void assignAccessible();
     void assignWalls();
     void leftHandRule();
     void checkExit(int xValue, int yValue);
+    void firstRun();
+    void shortPathFinder();
 
     QTimer *_comTimer;
     QTimer *_aiCallTimer;
