@@ -55,7 +55,7 @@ public:
     {
         if (microMouseServer->objectName().isEmpty())
             microMouseServer->setObjectName(QStringLiteral("microMouseServer"));
-        microMouseServer->resize(800, 1000);
+        microMouseServer->resize(650, 1000);
         actionSave_Maze = new QAction(microMouseServer);
         actionSave_Maze->setObjectName(QStringLiteral("actionSave_Maze"));
         menu_startRun = new QAction(microMouseServer);
@@ -79,7 +79,7 @@ public:
         verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
         graphics = new QGraphicsView(centralWidget);
         graphics->setObjectName(QStringLiteral("graphics"));
-        graphics->setEnabled(true);
+        graphics->setAutoFillBackground(false);
 
         verticalLayout->addWidget(graphics);
 
@@ -116,7 +116,7 @@ public:
         microMouseServer->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(microMouseServer);
         menuBar->setObjectName(QStringLiteral("menuBar"));
-        menuBar->setGeometry(QRect(0, 0, 800, 22));
+        menuBar->setGeometry(QRect(0, 0, 650, 22));
         menuSystem = new QMenu(menuBar);
         menuSystem->setObjectName(QStringLiteral("menuSystem"));
         microMouseServer->setMenuBar(menuBar);

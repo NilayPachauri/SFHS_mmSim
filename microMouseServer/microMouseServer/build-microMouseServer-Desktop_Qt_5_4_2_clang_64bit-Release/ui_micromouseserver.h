@@ -79,7 +79,6 @@ public:
         verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
         graphics = new QGraphicsView(centralWidget);
         graphics->setObjectName(QStringLiteral("graphics"));
-        graphics->setEnabled(true);
 
         verticalLayout->addWidget(graphics);
 
@@ -116,7 +115,7 @@ public:
         microMouseServer->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(microMouseServer);
         menuBar->setObjectName(QStringLiteral("menuBar"));
-        menuBar->setGeometry(QRect(0, 0, 800, 22));
+        menuBar->setGeometry(QRect(0, 0, 800, 21));
         menuSystem = new QMenu(menuBar);
         menuSystem->setObjectName(QStringLiteral("menuSystem"));
         microMouseServer->setMenuBar(menuBar);

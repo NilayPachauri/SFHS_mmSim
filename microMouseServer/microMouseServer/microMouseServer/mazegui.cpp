@@ -8,8 +8,12 @@ mazeGui::mazeGui(QObject *parent) :
     //initialize gui colors
     this->_wallPen = new QPen(QColor(0xFF,0xFF,0xFF,0xFF));
     this->_guidePen = new QPen(QColor(0xFF,0xFF,0xFF,0x20));
-    this->_mousePen = new QPen(QColor(0xFF,0xFF,0x00,0xFF));
-    this->_mouseBrush = new QBrush(QColor(0xFF, 0xFF, 0X00, 0xFF));
+    /*
+    static QColor mouseColor = QColor(rand()%256,rand()%256,rand()%256,255);
+    this->_mousePen = new QPen(mouseColor);
+    this->_mouseBrush = new QBrush(mouseColor);
+    */
+
     this->_wallPen->setWidth(WALL_THICKNESS_PX);
     this->_guidePen->setWidth(WALL_THICKNESS_PX);
 
@@ -122,6 +126,7 @@ QPen mazeGui::wallPen()
 
 void mazeGui::drawGuideLines()
 {
+
     this->_bgGrid = this->createItemGroup(this->selectedItems());
     for(int i = 0 ; i <= MAZE_WIDTH; i++)
     {
@@ -173,6 +178,10 @@ void mazeGui::drawMaze(baseMapNode data[][MAZE_HEIGHT])
 
 void mazeGui::drawMouse(QPoint cell, mDirection direction)
 {
+    QColor mouseColor = QColor(rand()%256,rand()%256,rand()%256,255);
+    this->_mousePen = new QPen(mouseColor);
+    this->_mouseBrush = new QBrush(mouseColor);
+
     _mouseDir = direction;
     _mousePos = cell;
     //math!

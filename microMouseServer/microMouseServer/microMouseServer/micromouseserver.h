@@ -12,6 +12,8 @@
 #include <QLineF>
 #include <QTimer>
 
+#include <mazecell.h>
+
 
 
 namespace Ui {
@@ -49,29 +51,69 @@ private:
     bool isWallRight();
     bool isWallForward();
     bool moveForward();
-    void realMoveForward();
     void turnLeft();
     void turnRight();
     void foundFinish();
-    void printUI(const char *mesg);
+    void printUI(const QString mesg);
 
-    int leftAmount();
-    int topAmount();
-    int rightAmount();
-    int backAmount();
+    bool isWallBack();
+
+    mazeCell& positionCurrent();
+    mazeCell& positionLeft();
+    mazeCell& positionTop();
+    mazeCell& positionRight();
+    mazeCell& positionBottom();
+
+    int amountLeft();
+    int amountTop();
+    int amountRight();
+    int amountBottom();
 
     void moveLeft();
+    void realMoveForward();
     void moveRight();
     void moveBack();
 
     int numberOfWalls();
     void deadEnd();
 
+    void assignPositions();
     void assignAccessible();
     void assignWalls();
     void leftHandRule();
     void checkExit(int xValue, int yValue);
+
     void firstRun();
+
+    bool isWallLeft(int x, int y);
+    bool isWallForward(int x, int y);
+    bool isWallRight(int x, int y);
+    bool isWallBack(int x, int y);
+
+    mazeCell& positionCurrent(int x, int y);
+    mazeCell& positionLeft(int x, int y);
+    mazeCell& positionTop(int x, int y);
+    mazeCell& positionRight(int x, int y);
+    mazeCell& positionBottom(int x, int y);
+
+    int amountLeft(int x, int y);
+    int amountTop(int x, int y);
+    int amountRight(int x, int y);
+    int amountBottom(int x, int y);
+
+    void zeroValues(int x, int y);
+    void setAdjacentCosts(int x, int y);
+    void shellSort(QVector <mazeCell*> * array);
+    void removeChecked(int x, int y);
+    void shortestPathDirections();
+
+    void shortestPathFinder(int x, int y);
+
+    void navigateShortestPath();
+    bool atExit();
+
+    void secondRun();
+
     void shortPathFinder();
 
     QTimer *_comTimer;
