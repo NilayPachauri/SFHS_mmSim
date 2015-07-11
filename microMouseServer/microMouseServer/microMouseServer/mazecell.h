@@ -19,6 +19,7 @@ public:
     int hCost;
 
     mazeCell();
+    bool isAdjacent(mazeCell *other);
 };
 
 #endif // MAZECELL_H

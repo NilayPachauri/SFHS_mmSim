@@ -89,6 +89,7 @@ private:
     bool isWallForward(int x, int y);
     bool isWallRight(int x, int y);
     bool isWallBack(int x, int y);
+    bool isExit(mazeCell *cell);
 
     mazeCell& positionCurrent(int x, int y);
     mazeCell& positionLeft(int x, int y);
@@ -103,7 +104,10 @@ private:
 
     void zeroValues(int x, int y);
     void setAdjacentCosts(int x, int y);
+
     void shellSort(QVector <mazeCell*> * array);
+    void insertionSort(QVector <mazeCell*> * array);
+
     void removeChecked(int x, int y);
     void shortestPathDirections();
 

@@ -517,7 +517,7 @@ int yPosition = 0;
 
 bool win = false;   //checks to see if the mouse has reached the end
 bool populated = false;
-bool atStart = false;
+bool finishedMapping = false;
 
 mazeCell myData[20][20];    //need array here so all functions can have access to it without passing in a parameter
 
@@ -1329,6 +1329,15 @@ bool microMouseServer::isWallBack(int x, int y) {
     return myData[x][y].wallBottom;
 }
 
+bool microMouseServer::isExit(mazeCell* cell)   {
+    if ((exitXPosition == cell->x) && (exitYPosition == cell->y))   {
+        return true;
+    }
+    else    {
+        return false;
+    }
+}
+
 
 mazeCell& microMouseServer::positionCurrent(int x, int y)   {
     return myData[x][y];
@@ -1491,10 +1500,11 @@ void microMouseServer::setAdjacentCosts(int x, int y)   {
 
 }
 
+
 void microMouseServer::shellSort(QVector <mazeCell*> * array)  {
     for (int gap = array->size()/2; gap > 0; gap /= 2)   {
         for (int i = gap; i < array->size(); i++)    {
-            for (int j=i-gap; j>=0 && &array->at(j)->fCost > &array->at(j+gap)->fCost; j-=gap) {
+            for (int j=i-gap; j>=0 && &array->at(j)->fCost < &array->at(j+gap)->fCost; j-=gap) {
                 /*
                 std::swap(array[j],array[j+gap]);
                 */
@@ -1511,6 +1521,19 @@ void microMouseServer::shellSort(QVector <mazeCell*> * array)  {
     }
     return;
 }
+
+void insertionSort(QVector <mazeCell*> * array) {
+      for (int i = 1; i < array->size(); i++)   {
+            int j = i;
+            while (j > 0 && array->at(j - 1) > array->at(j)) {
+                  mazeCell *temp = array->at(j);
+                  array->replace(j,array->at(j-1));
+                  array->replace(j - 1, temp);
+                  j--;
+            }
+      }
+}
+
 
 void microMouseServer::removeChecked(int x, int y)  {
     closedset->append(openset->at(0));
@@ -1538,14 +1561,26 @@ void microMouseServer::shortestPathDirections() {
             }
         }
 
-        shellSort(possibilities);
+        for (int k = 0; k < possibilities->size(); k++) {
+            if (!shortestDirections->empty())   {
+                if (!(shortestDirections->first()->isAdjacent(possibilities->at(k))))   {
+                    possibilities->remove(k);
+                }
+            }
+            else    {
+                if (!(isExit(possibilities->at(k))))    {
+                    possibilities->remove(k);
+                }
+            }
+        }
+
+        insertionSort(possibilities);
 
         shortestDirections->insert(0,possibilities->at(0));
         shortestDirections->at(0)->amount = 0;
 
         possibilities->clear();
     }
-
     return;
 }
 
@@ -1587,7 +1622,9 @@ void microMouseServer::shortestPathFinder(int x, int y) {
 
 
 void microMouseServer::secondRun()  {
-    shortestPathFinder(0,0);
+    if (shortestDirections->empty())    {
+        shortestPathFinder(0,0);
+    }
     navigateShortestPath();
     if (atExit())   {
         foundFinish();
@@ -1688,6 +1725,9 @@ void microMouseServer::shortPathFinder()    {
 
 void microMouseServer::studentAI()
 {
+    if (populated && xPosition == 0 && yPosition == 0)  {
+        finishedMapping = true;
+    }
     /*
     if (populated && (xPosition == 0 && yPosition == 0))    {
         atStart = true;
@@ -1701,7 +1741,7 @@ void microMouseServer::studentAI()
         firstRun();
     }
     */
-    if (!populated) {
+    if (!(finishedMapping)) {
         firstRun();
     }
    /* else    {
