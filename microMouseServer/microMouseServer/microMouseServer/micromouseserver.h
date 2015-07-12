@@ -108,7 +108,7 @@ private:
     void shellSort(QVector <mazeCell*> * array);
     void insertionSort(QVector <mazeCell*> * array);
 
-    void removeChecked(int x, int y);
+    void removeChecked();
     void shortestPathDirections();
 
     void shortestPathFinder(int x, int y);

@@ -6,11 +6,9 @@
 #include <QFile>
 #include <QTextStream>
 
-#include <functional>
-using namespace std;
-
-#include <QByteArray>
 #include <mazecell.h>
+
+#include <tgmath.h>
 
 
 microMouseServer::microMouseServer(QWidget *parent) :
@@ -994,8 +992,7 @@ void microMouseServer::assignWalls() { //assigns the walls based on the directio
     if (!myData[xPosition][yPosition].wallBottom && myData[xPosition][yPosition-1].amount == -2) {
         myData[xPosition][yPosition-1].amount = 0;
     }
-    /*
-/*
+
     if (xPosition == 0 && yPosition == 0)   {
         if (myData[xPosition][yPosition].amount == -2)  {
             myData[xPosition][yPosition].amount = 1;
@@ -1388,7 +1385,7 @@ void microMouseServer::setAdjacentCosts(int x, int y)   {
         else    {
             positionLeft(x,y).gCost = std::min(positionCurrent(x,y).gCost+10,positionLeft(x,y).gCost);  //update the cost so it is the lesser one between the previous and the new one
         }
-        positionLeft(x,y).hCost = (abs((x-1)-exitXPosition) + (abs(y-exitYPosition)))*10;   //assign the hereuistic cost depending on distance from exit
+        positionLeft(x,y).hCost = sqrt(pow((x-1)-exitXPosition,2) + pow(y-exitYPosition,2))*10;   //assign the hereuistic cost depending on distance from exit
         positionLeft(x,y).fCost = positionLeft(x,y).gCost + positionLeft(x,y).hCost;    //assign the total cost depending on the movement and hereuistic costs
 
         added = false;  //added is false because the initial condition is it has not been added to either
@@ -1417,7 +1414,7 @@ void microMouseServer::setAdjacentCosts(int x, int y)   {
         else    {
             positionTop(x,y).gCost = std::min(positionCurrent(x,y).gCost+10,positionTop(x,y).gCost);
         }
-        positionTop(x,y).hCost = (abs(x-exitXPosition) + (abs((y+1)-exitYPosition)))*10;
+        positionTop(x,y).hCost = sqrt(pow(x-exitXPosition,2) + pow((y+1)-exitYPosition,2))*10;
         positionTop(x,y).fCost = positionTop(x,y).gCost + positionTop(x,y).hCost;
 
         added = false;
@@ -1446,7 +1443,7 @@ void microMouseServer::setAdjacentCosts(int x, int y)   {
         else    {
             positionRight(x,y).gCost = std::min(positionCurrent(x,y).gCost+10,positionRight(x,y).gCost);
         }
-        positionRight(x,y).hCost = (abs((x+1)-exitXPosition) + (abs(y-exitYPosition)))*10;
+        positionRight(x,y).hCost = sqrt(pow((x+1)-exitXPosition,2) + pow(y-exitYPosition,2))*10;
         positionRight(x,y).fCost = positionRight(x,y).gCost + positionRight(x,y).hCost;
 
         added = false;
@@ -1475,7 +1472,7 @@ void microMouseServer::setAdjacentCosts(int x, int y)   {
         else    {
             positionBottom(x,y).gCost = std::min(positionCurrent(x,y).gCost+10,positionBottom(x,y).gCost);
         }
-        positionBottom(x,y).hCost = (abs(x-exitXPosition) + (abs((y-1)-exitYPosition)))*10;
+        positionBottom(x,y).hCost = sqrt(pow(x-exitXPosition,2) + pow((y-1)-exitYPosition,2))*10;
         positionBottom(x,y).fCost = positionBottom(x,y).gCost + positionBottom(x,y).hCost;
 
         added = false;
@@ -1522,7 +1519,7 @@ void microMouseServer::shellSort(QVector <mazeCell*> * array)  {
     return;
 }
 
-void insertionSort(QVector <mazeCell*> * array) {
+void microMouseServer::insertionSort(QVector <mazeCell*> *array) {
       for (int i = 1; i < array->size(); i++)   {
             int j = i;
             while (j > 0 && array->at(j - 1) > array->at(j)) {
@@ -1535,7 +1532,7 @@ void insertionSort(QVector <mazeCell*> * array) {
 }
 
 
-void microMouseServer::removeChecked(int x, int y)  {
+void microMouseServer::removeChecked()  {
     closedset->append(openset->at(0));
     openset->remove(0);
     return;
@@ -1554,30 +1551,34 @@ void microMouseServer::zeroValues(int x, int y)  {
 void microMouseServer::shortestPathDirections() {
     QVector <mazeCell*> * possibilities = new QVector <mazeCell*>;
 
-    for (int i = closedset->last()->gCost; i >= 0; i = i - 10)  {
+    for (int i = closedset->last()->gCost; i >= 0; i = i - 10)  {   //if the movement cost is one less than the last checked, then add it to the list of possibilities
         for (int j = 0; j < closedset->size(); j++) {
             if (closedset->at(j)->gCost == i)   {
                 possibilities->append(closedset->at(j));
             }
         }
 
-        for (int k = 0; k < possibilities->size(); k++) {
+        for (int k = 0; k < possibilities->size(); k++) {   //if the possibility isn't adjacent to the last checked cell, remove it
             if (!shortestDirections->empty())   {
                 if (!(shortestDirections->first()->isAdjacent(possibilities->at(k))))   {
                     possibilities->remove(k);
+                    k--;
                 }
             }
             else    {
-                if (!(isExit(possibilities->at(k))))    {
+                if (!(isExit(possibilities->at(k))))    {   //when the vector is empty, the first value to populate it will be the exit
                     possibilities->remove(k);
+                    k--;
                 }
             }
         }
 
-        insertionSort(possibilities);
+//        if (possibilities->size() > 1)  {
+//            insertionSort(possibilities);
+//        }
 
         shortestDirections->insert(0,possibilities->at(0));
-        shortestDirections->at(0)->amount = 0;
+        shortestDirections->first()->amount = 0;
 
         possibilities->clear();
     }
@@ -1610,7 +1611,7 @@ void microMouseServer::shortestPathFinder(int x, int y) {
     zeroValues(x,y);
     setAdjacentCosts(x,y);
     shellSort(openset);
-    removeChecked(x,y);
+    removeChecked();
     if (closedset->last() == &myData[exitXPosition][exitYPosition]) {
         shortestPathDirections();
     }

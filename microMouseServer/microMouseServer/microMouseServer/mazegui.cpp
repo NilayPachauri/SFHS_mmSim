@@ -2,6 +2,10 @@
 #include "mazegui.h"
 #include<QGraphicsSceneMoveEvent>
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
 mazeGui::mazeGui(QObject *parent) :
     QGraphicsScene(parent)
 {
@@ -178,6 +182,7 @@ void mazeGui::drawMaze(baseMapNode data[][MAZE_HEIGHT])
 
 void mazeGui::drawMouse(QPoint cell, mDirection direction)
 {
+    srand(time(NULL));
     QColor mouseColor = QColor(rand()%256,rand()%256,rand()%256,255);
     this->_mousePen = new QPen(mouseColor);
     this->_mouseBrush = new QBrush(mouseColor);
