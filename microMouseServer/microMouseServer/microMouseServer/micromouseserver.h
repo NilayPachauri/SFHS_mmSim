@@ -1,5 +1,6 @@
 #ifndef MICROMOUSESERVER_H
 #define MICROMOUSESERVER_H
+#include <cell.h>
 #include "mazeConst.h"
 #include "mazeBase.h"
 #include "mazegui.h"
@@ -31,6 +32,12 @@ public:
 private slots:
     void on_tabWidget_tabBarClicked(int index);
     void loadMaze();
+
+
+    void generateMaze();
+
+    void makeMaze(Cell map[][20], int x, int y, Cell exitCell);
+
     void saveMaze();
     void addLeftWall(QPoint cell);
     void addRightWall(QPoint cell);
@@ -46,6 +53,7 @@ private slots:
     void studentAI();
 
 
+
 private:
     bool isWallLeft();
     bool isWallRight();
@@ -58,11 +66,11 @@ private:
 
     bool isWallBack();
 
-    mazeCell& positionCurrent();
-    mazeCell& positionLeft();
-    mazeCell& positionTop();
-    mazeCell& positionRight();
-    mazeCell& positionBottom();
+    MazeCell& positionCurrent();
+    MazeCell& positionLeft();
+    MazeCell& positionTop();
+    MazeCell& positionRight();
+    MazeCell& positionBottom();
 
     int amountLeft();
     int amountTop();
@@ -89,13 +97,13 @@ private:
     bool isWallForward(int x, int y);
     bool isWallRight(int x, int y);
     bool isWallBack(int x, int y);
-    bool isExit(mazeCell *cell);
+    bool isEnd(MazeCell *cell, int x, int y);
 
-    mazeCell& positionCurrent(int x, int y);
-    mazeCell& positionLeft(int x, int y);
-    mazeCell& positionTop(int x, int y);
-    mazeCell& positionRight(int x, int y);
-    mazeCell& positionBottom(int x, int y);
+    MazeCell& positionCurrent(int x, int y);
+    MazeCell& positionLeft(int x, int y);
+    MazeCell& positionTop(int x, int y);
+    MazeCell& positionRight(int x, int y);
+    MazeCell& positionBottom(int x, int y);
 
     int amountLeft(int x, int y);
     int amountTop(int x, int y);
@@ -103,15 +111,16 @@ private:
     int amountBottom(int x, int y);
 
     void zeroValues(int x, int y);
+    void resetCosts();
     void setAdjacentCosts(int x, int y);
 
-    void shellSort(QVector <mazeCell*> * array);
-    void insertionSort(QVector <mazeCell*> * array);
+    void shellSort(QVector <MazeCell*> * array);
+    void insertionSort(QVector <MazeCell*> * array);
 
     void removeChecked();
-    void shortestPathDirections();
+    void shortestPathDirections(int x, int y);
 
-    void shortestPathFinder(int x, int y);
+    void shortestPathFinder(int x, int y, int xEnd, int yEnd);
 
     void navigateShortestPath();
     bool atExit();

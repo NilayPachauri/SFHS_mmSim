@@ -16,13 +16,15 @@ SOURCES += mazegui.cpp\
         main.cpp \
         micromouseserver.cpp \
     mazeBase.cpp \
-    mazecell.cpp
+    mazecell.cpp \
+    cell.cpp
 
 
 HEADERS  += micromouseserver.h \
     mazeConst.h \
     mazeBase.h \
     mazegui.h \
-    mazecell.h
+    mazecell.h \
+    cell.h
 
 FORMS    += micromouseserver.ui

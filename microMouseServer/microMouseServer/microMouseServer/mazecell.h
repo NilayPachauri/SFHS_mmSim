@@ -2,7 +2,7 @@
 #define MAZECELL_H
 
 
-class mazeCell
+class MazeCell
 {
 public:
     bool wallLeft;
@@ -18,8 +18,8 @@ public:
     int gCost;
     int hCost;
 
-    mazeCell();
-    bool isAdjacent(mazeCell *other);
+    MazeCell();
+    bool isAdjacent(MazeCell *other, int amountLeft, int amountTop, int amountRight, int amountBottom);
 };
 
 #endif // MAZECELL_H

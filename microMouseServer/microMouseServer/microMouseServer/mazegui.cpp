@@ -1,6 +1,7 @@
 #include "mazeConst.h"
 #include "mazegui.h"
 #include<QGraphicsSceneMoveEvent>
+#include<QKeyEvent>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,6 +10,7 @@
 mazeGui::mazeGui(QObject *parent) :
     QGraphicsScene(parent)
 {
+    srand(time(NULL));
     //initialize gui colors
     this->_wallPen = new QPen(QColor(0xFF,0xFF,0xFF,0xFF));
     this->_guidePen = new QPen(QColor(0xFF,0xFF,0xFF,0x20));
@@ -44,6 +46,31 @@ mazeGui::~mazeGui()
     delete mazeWalls;
     delete _mouse;
 }
+
+//void mazeGui::keyPressEvent(QKeyEvent *event)   {
+//    if (event->key() == (Qt::Key_G))  {
+//        Cell map[MAZE_WIDTH][MAZE_HEIGHT];
+
+//        generateMaze(map);
+//        for (int i = 0; i < MAZE_WIDTH; i++)    {
+//            for (int j = 0; j < MAZE_HEIGHT; j++)   {
+//                if (map[i][j].getWallLeft())  {
+//                    emit passLeftWall(QPoint((int) i * 31.3,(int) j));
+//                }
+//                if (map[i][j].getWallTop()) {
+//                    emit passTopWall(QPoint((int) i, (int) (j+1) * 36.55));
+//                }
+//                if (map[i][j].getWallRight())   {
+//                    emit passRightWall(QPoint((int) (i+1) * 31.3, (int) j));
+//                }
+//                if (map[i][j].getWallBottom())  {
+//                    emit passBottomWall(QPoint((int) i, (int) j * 36.55));
+//                }
+//            }
+//        }
+//    }
+//}
+
 
 void mazeGui::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
 {
@@ -182,7 +209,6 @@ void mazeGui::drawMaze(baseMapNode data[][MAZE_HEIGHT])
 
 void mazeGui::drawMouse(QPoint cell, mDirection direction)
 {
-    srand(time(NULL));
     QColor mouseColor = QColor(rand()%256,rand()%256,rand()%256,255);
     this->_mousePen = new QPen(mouseColor);
     this->_mouseBrush = new QBrush(mouseColor);

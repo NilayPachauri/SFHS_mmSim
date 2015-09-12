@@ -1,4 +1,5 @@
 #include "micromouseserver.h"
+#include "cell.h"
 #include "ui_micromouseserver.h"
 #include "mazeConst.h"
 #include "mazegui.h"
@@ -52,6 +53,7 @@ void microMouseServer::connectSignals()
     //connect all signals
 
     connect(ui->menu_loadMaze, SIGNAL(triggered()), this, SLOT(loadMaze()));
+    connect(ui->menu_generateMaze, SIGNAL(triggered()), this, SLOT(generateMaze()));
     connect(ui->menu_saveMaze, SIGNAL(triggered()), this, SLOT(saveMaze()));
     connect(ui->menu_connect2Mouse, SIGNAL(triggered()), this, SLOT(connect2mouse()));
     connect(ui->menu_startRun, SIGNAL(triggered()), this, SLOT(startAI()));
@@ -82,7 +84,7 @@ void microMouseServer::loadMaze()
 {
     //open file find window
     QString fileName = QFileDialog::getOpenFileName(this,
-             tr("Open Maze File"), "./", tr("Maze Files (*.maz)"));
+                                                    tr("Open Maze File"), "./", tr("Maze Files (*.maz)"));
     QFile inFile(fileName);
 
     //if the file can't be opened throw error to ui
@@ -108,7 +110,7 @@ void microMouseServer::loadMaze()
 
         //check formating
         if(x<0 || y<0 || wallTop<0 || wallBottom<0 || wallLeft<0 || wallRight<0 ||
-           wallTop>1 || wallBottom>1 || wallLeft>1 || wallRight>1)
+                wallTop>1 || wallBottom>1 || wallLeft>1 || wallRight>1)
         {
             ui->txt_debug->append("ERROR 201: file formating error");
             return;
@@ -146,11 +148,11 @@ void microMouseServer::loadMaze()
 
         if(wallLeft)
         {
-             mover->setWall(LEFT, NULL);
+            mover->setWall(LEFT, NULL);
         }
         else
         {
-           // mover->setWall(LEFT, &this->mazeData[x-1][y]);
+            // mover->setWall(LEFT, &this->mazeData[x-1][y]);
         }
 
         if(wallRight)
@@ -176,10 +178,10 @@ void microMouseServer::loadMaze()
         }
         else
         {
-           // mover->setWall(BOTTOM, &this->mazeData[x][y-1]);
+            // mover->setWall(BOTTOM, &this->mazeData[x][y-1]);
         }
     }
-    ui->txt_debug->append("Maze loaded");
+    //ui->txt_debug->append("Maze loaded");
     mazeFile.flush();
     inFile.close();
 
@@ -188,12 +190,244 @@ void microMouseServer::loadMaze()
     this->maze->drawMouse(QPoint(1,1),dUP);
 }
 
+//void microMouseServer::generateMaze(Cell map[20][20])
+
+void microMouseServer::generateMaze()   {
+    //generate a random maze
+
+    int userInputX;
+    int userInputY;
+
+    srand(time(NULL));  //seeding the random generator so we can make it as random as possible, in this case its seeded based on the time
+
+    int xStartingPosition = 0;  //setting the starting position
+    int yStartingPosition = 0;
+    int xExitPosition = rand()%MAZE_WIDTH-1;  //and exit position between 0 and 18 b/c the other open cells will be +1 x, +1 y, and +1 x and y
+    int yExitPosition = rand()%MAZE_HEIGHT-1;  //hence it'll reach the bounds of the array
+
+    Cell map[MAZE_WIDTH][MAZE_HEIGHT];  //initializing data structure which will hold the generated maze
+
+    for (int i = 0; i < MAZE_WIDTH; i++)    {   //giving all the values of the map their correct x and y values
+        for (int j = 0; j < MAZE_HEIGHT; j++)   {
+            map[i][j].setX(i);
+            map[i][j].setY(j);
+        }
+    }
+
+    map[xExitPosition][yExitPosition].setWallTop(false);    //setting the inside of the square to be empty
+    map[xExitPosition][yExitPosition].setWallRight(false);
+    map[xExitPosition+1][yExitPosition].setWallLeft(false);
+    map[xExitPosition+1][yExitPosition].setWallTop(false);
+    map[xExitPosition+1][yExitPosition+1].setWallLeft(false);
+    map[xExitPosition+1][yExitPosition+1].setWallBottom(false);
+    map[xExitPosition][yExitPosition+1].setWallRight(false);
+    map[xExitPosition][yExitPosition+1].setWallBottom(false);
+
+    srand(time(NULL));
+
+    makeMaze(map,xStartingPosition,yStartingPosition,map[xExitPosition][yExitPosition]);
+
+//    for (int i = 0; i < MAZE_WIDTH; i++) {
+//        for (int j = 0; j < MAZE_HEIGHT; j++)   {
+
+//            if (map[i][j].getWallLeft())   {
+//                addLeftWall(QPoint(i,j));
+//            }
+//            if (map[i][j].getWallTop())  {
+//                addTopWall(QPoint(i,j));
+//            }
+//            if (map[i][j].getWallRight())    {
+//                addRightWall(QPoint(i,j));
+//            }
+//            if (map[i][j].getWallBottom()) {
+//                addBottomWall(QPoint(i,j));
+//            }
+//        }
+//    }
+
+//    baseMapNode* moverArray[MAZE_WIDTH][MAZE_HEIGHT]; //drawing what has been made
+
+//    for (int i = 0; i < MAZE_WIDTH; i++)    {
+//        for (int j = 0; j < MAZE_HEIGHT; j++)   {
+//            moverArray[i][j] = &this->mazeData[i][j];
+//        }
+//    }
+
+//    for (int i = 0; i < MAZE_WIDTH; i++) {
+//        for (int j = 0; j < MAZE_HEIGHT; j++)   {
+
+//            baseMapNode *mover = moverArray[i-1][j-1];
+//            mover->setXY(i,j);  //problem when i call methods
+
+//            if (map[i][j].getWallLeft())   {
+//                mover->setWall(LEFT, NULL);
+//            }
+//            if (map[i][j].getWallTop())  {
+//                mover->setWall(TOP, NULL);
+//            }
+//            if (map[i][j].getWallRight())    {
+//                mover->setWall(RIGHT, NULL);
+//            }
+
+//            if (map[i][j].getWallBottom()) {
+//                mover->setWall(BOTTOM, NULL);
+//            }
+//        }
+//    }
+
+    QFile generatedFile("/Users/Nilay/Desktop/Micromouse/test.maz");
+    if(generatedFile.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        ui->txt_status->append("could not open file");
+    }
+    QTextStream nigga(&generatedFile);
+
+    for(int i = 0; i < MAZE_WIDTH; i++)
+    {
+        for(int j = 0; j < MAZE_HEIGHT; j++)
+        {
+
+
+            int top = map[i][j].getWallTop();
+            int bottom = map[i][j].getWallBottom();
+            int left = map[i][j].getWallLeft();
+            int right = map[i][j].getWallRight();
+
+            int x = map[i][j].getX() + 1;
+            int y = map[i][j].getY() + 1;
+
+            nigga << x << " " << y << " " << top << " " << bottom << " " << left << " " << right << endl;
+        }
+    }
+    nigga.flush();
+    generatedFile.close();
+
+    loadMaze();
+    return;
+}
+
+void microMouseServer::makeMaze(Cell map[][20], int x, int y, Cell exitCell)    {
+    srand(time(NULL));
+
+    int removeLeft = rand()%2;  //randomizing whether the walls should be there or not
+    int removeTop = rand()%2;
+    int removeRight = rand()%2;
+    int removeBottom = rand()%2;
+
+    bool completed = false;
+
+    map[x][y].setVisited(true);
+
+    if (removeLeft == 0 && x > 0)   {   //if the random outcome is to remove the wall and there is a spot to the left
+        map[x][y].setWallLeft(false);   //remove the left wall of the current cell
+        map[x-1][y].setWallRight(false);    //remove the right wall of the left cell
+    }
+    if (removeTop == 0 && y < MAZE_HEIGHT -1)   {
+        map[x][y].setWallTop(false);
+        map[x][y+1].setWallBottom(false);
+    }
+    if (removeRight == 0 && x < MAZE_WIDTH - 1) {
+        map[x][y].setWallRight(false);
+        map[x+1][y].setWallLeft(false);
+    }
+    if (removeBottom == 0 && y > 0) {
+        map[x][y].setWallBottom(false);
+        map[x-1][y].setWallTop(false);
+    }
+
+    if (!map[x][y].getWallLeft()) {   //if theres no wall to my left
+        if (map[x][y].getX() > 0) {   //and there is a spot to my left
+            if (!map[x-1][y].getVisited())  {   //and that spot hasn't been visited
+                map[x][y].addAdjacentUnexploredCell(map[x-1][y]);  //add the spot to my unexplored cells
+            }
+        }
+    }
+    if (!map[x][y].getWallTop()) {   //if theres no wall to my top
+        if (map[x][y].getY() < MAZE_HEIGHT -1) {   //and there is a spot to my top
+            if (!map[x-1][y].getVisited())  {   //and that spot hasn't been visited
+                map[x][y].addAdjacentUnexploredCell(map[x][y+1]);  //add the spot to my unexplored cells
+            }
+        }
+    }
+    if (!map[x][y].getWallRight()) {   //if theres no wall to my Right
+        if (map[x][y].getX() < MAZE_WIDTH -1) {   //and there is a spot to my Right
+            if (!map[x+1][y].getVisited())  {   //and that spot hasn't been visited
+                map[x][y].addAdjacentUnexploredCell(map[x+1][y]);  //add the spot to my unexplored cells
+            }
+        }
+    }
+    if (!map[x][y].getWallBottom()) {   //if theres no wall to my bottom
+        if (map[x][y].getY() > 0) {   //and there is a spot to my bottom
+            if (!map[x][y-1].getVisited())  {   //and that spot hasn't been visited
+                map[x][y].addAdjacentUnexploredCell(map[x][y-1]);  //add the spot to my unexplored cells
+            }
+        }
+    }
+
+    while (!map[x][y].getAdjacentUnexploredCell().empty()) {    //while there are more spots to explore
+        int adjacentX = map[x][y].getAdjacentUnexploredCell().first().getX();   //get the xCoordinate of the item to explore
+        int adjacentY = map[x][y].getAdjacentUnexploredCell().first().getY();   //as well as the y
+        map[x][y].removeFirstAdjacentUnexploredCell();  //remove it because we're going to explore it
+        makeMaze(map,adjacentX,adjacentY,exitCell);  //explore it
+    }
+
+    while (!completed)  {   //while the entire maze has not been made
+        for (int i = 0; i < MAZE_WIDTH; i++)    {   //iterate x
+            for (int j = 0; j < MAZE_HEIGHT; j++)   {   //iterate y
+                if (!map[i][j].getVisited())    {   //find a place which hasn't been visited yet
+                    makeMaze(map,i,j,exitCell);  //explore it
+                }
+            }
+        }
+
+        completed = true;   //set completed to be true because we soon check if it is
+
+        for (int i = 0; i < MAZE_WIDTH; i++)    {   //iterate x
+            for (int j = 0; j < MAZE_HEIGHT; j++)   {   //iterate y
+                if (!map[i][j].getVisited())    {   //if a place is found which is not visited
+                    completed = false;  //then the maze has not been completed
+                }
+            }
+        }
+    }
+
+    for (int i = 0; i < MAZE_WIDTH - 1; i++)    {
+        for (int j = 0; j < MAZE_HEIGHT; j++)   {
+            if (!(map[i][j].getWallTop() && map[i][j+1].getWallRight() && map[i+1][j+1].getWallBottom() && map[i+1][j+1].getWallLeft()) && !(map[x][y].equals(exitCell))) {
+                int leftRandom = rand() % 2;
+                int topRandom = rand() % 2;
+                int rightRandom = rand() % 2;
+                int bottomRandom = rand() % 2;
+
+                if (leftRandom == 0)    {
+                    map[i][j].setWallTop(true);
+                    map[i][j+1].setWallBottom(true);
+                }
+                if (topRandom == 0)    {
+                    map[i][j+1].setWallRight(true);
+                    map[i+1][j+1].setWallLeft(true);
+                }
+                if (rightRandom == 0)    {
+                    map[i+1][j+1].setWallBottom(true);
+                    map[i+1][j].setWallTop(true);
+                }
+                if (bottomRandom == 0)    {
+                    map[i+1][j].setWallLeft(true);
+                    map[i][j].setWallRight(true);
+                }
+
+            }
+        }
+    }
+
+    return;
+}
 
 void microMouseServer::saveMaze()
 {
     //open file save window
     QString fileName = QFileDialog::getSaveFileName(this,
-             tr("Select Maze File"), "", tr("Maze Files (*.maz)"));
+                                                    tr("Select Maze File"), "", tr("Maze Files (*.maz)"));
     QFile inFile(fileName);
 
     //if file can't be opened throw error to UI
@@ -516,16 +750,17 @@ int yPosition = 0;
 bool win = false;   //checks to see if the mouse has reached the end
 bool populated = false;
 bool finishedMapping = false;
+bool entered = false;
 
-mazeCell myData[20][20];    //need array here so all functions can have access to it without passing in a parameter
+MazeCell myData[MAZE_WIDTH][MAZE_HEIGHT];    //need array here so all functions can have access to it without passing in a parameter
 
 int exitXPosition = 0;
 int exitYPosition = 0;
 
-QVector <mazeCell*> * openset = new QVector <mazeCell*>;
-QVector <mazeCell*> * closedset = new QVector <mazeCell*>;
+QVector <MazeCell*> * openset = new QVector <MazeCell*>;
+QVector <MazeCell*> * closedset = new QVector <MazeCell*>;
 
-QVector <mazeCell*> * shortestDirections = new QVector <mazeCell*>;
+QVector <MazeCell*> * shortestDirections = new QVector <MazeCell*>;
 
 bool finishedPossibilities;
 
@@ -552,6 +787,8 @@ bool microMouseServer::isWallBack() {
     case 3:
         return positionCurrent().wallRight;
         break;
+    default:
+        return true;
     }
 }
 
@@ -596,9 +833,6 @@ void microMouseServer::moveRight()  {
     return;
 }
 
-//_aiCallTimer->stop();
-//ui->txt_status->append("stuff");
-
 void microMouseServer::moveBack()   {
     turnRight();
     turnRight();
@@ -612,11 +846,11 @@ void microMouseServer::moveBack()   {
 
 //start of maze returning functions
 
-mazeCell& microMouseServer::positionCurrent()    {
+MazeCell& microMouseServer::positionCurrent()    {
     return myData[xPosition][yPosition];
 }
 
-mazeCell& microMouseServer::positionLeft()   {
+MazeCell& microMouseServer::positionLeft()   {
     switch (direction % 4)  {
     case 0:
         return myData[xPosition-1][yPosition];
@@ -630,10 +864,12 @@ mazeCell& microMouseServer::positionLeft()   {
     case 3:
         return myData[xPosition][yPosition-1];
         break;
+    default:
+        return myData[xPosition][yPosition];
     }
 }
 
-mazeCell& microMouseServer::positionTop()    {
+MazeCell& microMouseServer::positionTop()    {
     switch (direction % 4)  {
     case 0:
         return myData[xPosition][yPosition+1];
@@ -647,10 +883,12 @@ mazeCell& microMouseServer::positionTop()    {
     case 3:
         return myData[xPosition-1][yPosition];
         break;
+    default:
+        return myData[xPosition][yPosition];
     }
 }
 
-mazeCell& microMouseServer::positionRight()  {
+MazeCell& microMouseServer::positionRight()  {
     switch (direction % 4)  {
     case 0:
         return myData[xPosition+1][yPosition];
@@ -664,10 +902,12 @@ mazeCell& microMouseServer::positionRight()  {
     case 3:
         return myData[xPosition][yPosition+1];
         break;
+    default:
+        return myData[xPosition][yPosition];
     }
 }
 
-mazeCell& microMouseServer::positionBottom() {
+MazeCell& microMouseServer::positionBottom() {
     switch (direction % 4)  {
     case 0:
         return myData[xPosition][yPosition-1];
@@ -681,111 +921,32 @@ mazeCell& microMouseServer::positionBottom() {
     case 3:
         return myData[xPosition+1][yPosition];
         break;
+    default:
+        return myData[xPosition][yPosition];
     }
 }
-
-/*
-mazeCell& microMouseServer::exitPositionTopRight(int x, int y)  {
-    switch (direction % 4)  {
-    case 0:
-        return myData[x+1][y+1];
-        break;
-    case 1:
-        return myData[x+1][y-1];
-        break;
-    case 2:
-        return myData[x-1][y-1];
-        break;
-    case 3:
-        return myData[x-1][y+1];
-        break;
-    }
-}
-*/
 
 //end of maze returning functions
+
 
 //start of amount returning functions
 
 int microMouseServer::amountLeft()  {
     return isWallLeft() ? -3 : positionLeft().amount;
-/*
-    switch (direction % 4)  {
-    case 0:
-        return isWallLeft() ? -3 : myData[xPosition-1][yPosition].amount;
-        break;
-    case 1:
-        return isWallLeft() ? -3 : myData[xPosition][yPosition+1].amount;
-        break;
-    case 2:
-        return isWallLeft() ? -3 : myData[xPosition+1][yPosition].amount;
-        break;
-    case 3:
-        return isWallLeft() ? -3 : myData[xPosition][yPosition-1].amount;
-        break;
-    }
-    */
 }
 
 int microMouseServer::amountTop()  {
     return isWallForward() ? -3 : positionTop().amount;
-    /*
-    switch (direction % 4)  {
-    case 0:
-        return isWallForward() ? -3 : myData[xPosition][yPosition+1].amount;
-        break;
-    case 1:
-        return isWallForward() ? -3 : myData[xPosition+1][yPosition].amount;
-        break;
-    case 2:
-        return isWallForward() ? -3 : myData[xPosition][yPosition-1].amount;
-        break;
-    case 3:
-        return isWallForward() ? -3 : myData[xPosition-1][yPosition].amount;
-        break;
-    }
-    */
 }
 
 int microMouseServer::amountRight()  {
     return isWallRight() ? -3 : positionRight().amount;
-    /*
-    switch (direction % 4)  {
-    case 0:
-        return isWallRight() ? -3 : myData[xPosition+1][yPosition].amount;
-        break;
-    case 1:
-        return isWallRight() ? -3 : myData[xPosition][yPosition-1].amount;
-        break;
-    case 2:
-        return isWallRight() ? -3 : myData[xPosition-1][yPosition].amount;
-        break;
-    case 3:
-        return isWallRight() ? -3 : myData[xPosition][yPosition+1].amount;
-        break;
-    }
-    */
 }
 
 int microMouseServer::amountBottom()  {
     return isWallBack() ? -3 : positionBottom().amount;
-    /*
-    switch (direction % 4)  {
-    case 0:
-        return myData[xPosition][yPosition].wallBottom ? -3 : myData[xPosition][yPosition-1].amount;
-        break;
-    case 1:
-        return myData[xPosition][yPosition].wallLeft ? -3 : myData[xPosition-1][yPosition].amount;
-        break;
-    case 2:
-        return myData[xPosition][yPosition].wallTop ? -3 : myData[xPosition][yPosition+1].amount;
-        break;
-    case 3:
-        return myData[xPosition][yPosition].wallRight ? -3 : myData[xPosition+1][yPosition].amount;
-        break;
-    }
-    */
 }
+
 
 //end of amount returning functions
 
@@ -837,69 +998,6 @@ void microMouseServer::assignAccessible()   {
     if (amountBottom() == -2)   {
         positionBottom().amount = 0;
     }
-    /*
-    switch (direction % 4)  {
-    case 0:
-        if (amountLeft() == -2) {
-            myData[xPosition-1][yPosition].amount = 0;
-        }
-        if (amountTop() == -2)  {
-            myData[xPosition][yPosition+1].amount = 0;
-        }
-        if (amountRight() == -2)    {
-            myData[xPosition+1][yPosition].amount = 0;
-        }
-        if (amountBottom() == -2) {
-            myData[xPosition][yPosition-1].amount = 0;
-        }
-        if (xPosition == 0 && yPosition == 0 && myData[xPosition][yPosition].amount == -2)  {
-            myData[xPosition][yPosition].amount = 0;
-        }
-        break;
-    case 1:
-        if (amountLeft() == -2) {
-            myData[xPosition][yPosition+1].amount = 0;
-        }
-        if (amountTop() == -2)  {
-            myData[xPosition+1][yPosition].amount = 0;
-        }
-        if (amountRight() == -2)    {
-            myData[xPosition][yPosition-1].amount = 0;
-        }
-        if (amountBottom() == -2) {
-            myData[xPosition-1][yPosition].amount == 0;
-        }
-        break;
-    case 2:
-        if (amountLeft() == -2) {
-            myData[xPosition+1][yPosition].amount = 0;
-        }
-        if (amountTop() == -2)  {
-            myData[xPosition][yPosition-1].amount = 0;
-        }
-        if (amountRight() == -2)    {
-            myData[xPosition-1][yPosition].amount = 0;
-        }
-        if (amountBottom() == -2) {
-            myData[xPosition][yPosition+1].amount = 0;
-        }
-        break;
-    case 3:
-        if (amountLeft() == -2) {
-            myData[xPosition][yPosition-1].amount = 0;
-        }
-        if (amountTop() == -2)  {
-            myData[xPosition-1][yPosition].amount = 0;
-        }
-        if (amountRight() == -2)    {
-            myData[xPosition][yPosition+1].amount = 0;
-        }
-        if (amountBottom() == -2) {
-            myData[xPosition+1][yPosition].amount = 0;
-        }
-        break;
-    }
-    */
     return;
 }
 
@@ -945,95 +1043,6 @@ void microMouseServer::assignWalls() { //assigns the walls based on the directio
         positionCurrent().wallBottom = isWallLeft();
         break;
     }
-    /*
-    if (direction % 4 == 0)  {  //checks to see if the mouse is facing forward
-        myData[xPosition][yPosition].wallLeft = isWallLeft();
-        myData[xPosition][yPosition].wallTop = isWallForward();
-        myData[xPosition][yPosition].wallRight = isWallRight();
-        if (xPosition == 0 && yPosition == 0)   {
-            myData[xPosition][yPosition].wallBottom = true;
-        }
-        else    {
-            myData[xPosition][yPosition].wallBottom = false;
-        }
-    }
-    else if ((direction - 1) % 4 == 0)   { //right
-        myData[xPosition][yPosition].wallLeft = false;
-        myData[xPosition][yPosition].wallTop = isWallLeft();
-        myData[xPosition][yPosition].wallRight = isWallForward();
-        myData[xPosition][yPosition].wallBottom = isWallRight();
-    }
-    else if ((direction - 2) % 4 == 0)   { //backwards
-        myData[xPosition][yPosition].wallLeft = isWallRight();
-        myData[xPosition][yPosition].wallTop = false;
-        myData[xPosition][yPosition].wallRight = isWallLeft();
-        myData[xPosition][yPosition].wallBottom = isWallForward();
-    }
-    else if ((direction + 1) % 4 == 0)   { //left
-        myData[xPosition][yPosition].wallLeft = isWallForward();
-        myData[xPosition][yPosition].wallTop = isWallRight();
-        myData[xPosition][yPosition].wallRight = false;
-        myData[xPosition][yPosition].wallBottom = isWallLeft();
-    }
-    */
-/*
-    if (!myData[xPosition][yPosition].wallLeft && myData[xPosition-1][yPosition].amount == -2) {
-        myData[xPosition-1][yPosition].amount = 0;
-    }
-
-    if (!myData[xPosition][yPosition].wallTop && myData[xPosition][yPosition+1].amount == -2) {
-        myData[xPosition][yPosition+1].amount = 0;
-    }
-
-    if (!myData[xPosition][yPosition].wallRight && myData[xPosition+1][yPosition].amount == -2) {
-        myData[xPosition+1][yPosition].amount = 0;
-    }
-
-    if (!myData[xPosition][yPosition].wallBottom && myData[xPosition][yPosition-1].amount == -2) {
-        myData[xPosition][yPosition-1].amount = 0;
-    }
-
-    if (xPosition == 0 && yPosition == 0)   {
-        if (myData[xPosition][yPosition].amount == -2)  {
-            myData[xPosition][yPosition].amount = 1;
-        }
-        else    {
-            myData[xPosition][yPosition].amount = myData[xPosition][yPosition].amount + 1;
-        }
-    }
-    else if (isWallLeft() && isWallForward() && isWallRight())   {  //checking to see if this is the dead end
-        myData[xPosition][yPosition].amount = -1;
-    }
-    else if (((isWallForward() && isWallLeft()) || (isWallForward() && isWallRight()) || (isWallLeft() && isWallRight())) && (direction % 4 == 0) && (myData[xPosition][yPosition-1].amount == -1))    {
-        myData[xPosition][yPosition].amount = -1;   //checks to see if this is the path leading to a dead end when facing forward
-    }
-    else if (((isWallForward() && isWallLeft()) || (isWallForward() && isWallRight()) || (isWallLeft() && isWallRight())) && ((direction - 1) % 4 == 0) && (myData[xPosition-1][yPosition].amount == -1))    {
-        myData[xPosition][yPosition].amount = -1;   //right
-    }
-    else if (((isWallForward() && isWallLeft()) || (isWallForward() && isWallRight()) || (isWallLeft() && isWallRight())) && ((direction - 2) % 4 == 0) && (myData[xPosition][yPosition+1].amount == -1))    {
-        myData[xPosition][yPosition].amount = -1;   //bottom
-    }
-    else if (((isWallForward() && isWallLeft()) || (isWallForward() && isWallRight()) || (isWallLeft() && isWallRight())) && ((direction + 1) % 4 == 0) && (myData[xPosition+1][yPosition].amount == -1))    {
-        myData[xPosition][yPosition].amount = -1;   //left
-    }
-    else if ((!myData[xPosition][yPosition].wallLeft && !myData[xPosition][yPosition].wallTop && !myData[xPosition][yPosition].wallRight && !myData[xPosition][yPosition].wallBottom) && (((myData[xPosition-1][yPosition].amount == -1) && (myData[xPosition][yPosition+1].amount == -1) && (myData[xPosition+1][yPosition].amount == -1) && (myData[xPosition][yPosition-1].amount != -1)) || ((myData[xPosition-1][yPosition].amount == -1) && (myData[xPosition][yPosition+1].amount == -1) && (myData[xPosition+1][yPosition].amount != -1) && (myData[xPosition][yPosition-1].amount == -1)) || ((myData[xPosition-1][yPosition].amount == -1) && (myData[xPosition][yPosition+1].amount != -1) && (myData[xPosition+1][yPosition].amount == -1) && (myData[xPosition][yPosition-1].amount == -1)) || ((myData[xPosition-1][yPosition].amount != -1) && (myData[xPosition][yPosition+1].amount == -1) && (myData[xPosition+1][yPosition].amount == -1) && (myData[xPosition][yPosition-1].amount == -1))))  {
-        myData[xPosition][yPosition].amount = -1;   //checking to see if an all of the intersections paths except one lead to dead ends
-    }
-    else if ((myData[xPosition][yPosition].wallLeft && !myData[xPosition][yPosition].wallTop && !myData[xPosition][yPosition].wallRight && !myData[xPosition][yPosition].wallBottom) && ((myData[xPosition][yPosition+1].amount == -1 && myData[xPosition+1][yPosition].amount == -1 && myData[xPosition][yPosition-1].amount != -1) || (myData[xPosition][yPosition+1].amount == -1 && myData[xPosition+1][yPosition].amount != -1 && myData[xPosition][yPosition-1].amount == -1) || (myData[xPosition][yPosition+1].amount != -1 && myData[xPosition+1][yPosition].amount == -1 && myData[xPosition][yPosition-1].amount == -1))) {
-        myData[xPosition][yPosition].amount = -1;   //checking to see if all the routes of a t-junction with no wall on the top, right and bottom except one lead to dead ends
-    }
-    else if ((!myData[xPosition][yPosition].wallLeft && myData[xPosition][yPosition].wallTop && !myData[xPosition][yPosition].wallRight && !myData[xPosition][yPosition].wallBottom) && ((myData[xPosition-1][yPosition].amount == -1 && myData[xPosition][yPosition-1].amount == -1 && myData[xPosition+1][yPosition].amount != -1) || (myData[xPosition-1][yPosition].amount == -1 && myData[xPosition][yPosition-1].amount != -1 && myData[xPosition+1][yPosition].amount == -1) || (myData[xPosition-1][yPosition].amount != -1 && myData[xPosition][yPosition-1].amount == -1 && myData[xPosition+1][yPosition].amount == -1))) {
-        myData[xPosition][yPosition].amount = -1;   //walls on left, down, right
-    }
-    else if ((!myData[xPosition][yPosition].wallLeft && !myData[xPosition][yPosition].wallTop && myData[xPosition][yPosition].wallRight && !myData[xPosition][yPosition].wallBottom) && ((myData[xPosition][yPosition+1].amount == -1 && myData[xPosition-1][yPosition].amount == -1 && myData[xPosition][yPosition-1].amount != -1) || (myData[xPosition][yPosition+1].amount == -1 && myData[xPosition-1][yPosition].amount != -1 && myData[xPosition][yPosition-1].amount == -1) || (myData[xPosition][yPosition+1].amount != -1 && myData[xPosition-1][yPosition].amount == -1 && myData[xPosition][yPosition-1].amount == -1))) {
-        myData[xPosition][yPosition].amount = -1;   //walls on top, left, bottom
-    }
-    else if ((!myData[xPosition][yPosition].wallLeft && !myData[xPosition][yPosition].wallTop && !myData[xPosition][yPosition].wallRight && myData[xPosition][yPosition].wallBottom) && ((myData[xPosition-1][yPosition].amount == -1 && myData[xPosition][yPosition+1].amount == -1 && myData[xPosition+1][yPosition].amount != -1) || (myData[xPosition-1][yPosition].amount == -1 && myData[xPosition][yPosition+1].amount != -1 && myData[xPosition+1][yPosition].amount == -1) || (myData[xPosition-1][yPosition].amount != -1 && myData[xPosition][yPosition+1].amount == -1 && myData[xPosition+1][yPosition].amount == -1))) {
-        myData[xPosition][yPosition].amount = -1;   //walls on left, top, right
-    }
-    else    {
-        myData[xPosition][yPosition].amount = myData[xPosition][yPosition].amount + 1;
-    }   */
 }
 
 void microMouseServer::leftHandRule()   {
@@ -1042,7 +1051,7 @@ void microMouseServer::leftHandRule()   {
     int valRight = amountRight();
     int valLeft = amountLeft();
 
-            //1     &&             (2a        ||     2b)       &&             (3a          ||          3b)
+    //1     &&             (2a        ||     2b)       &&             (3a          ||          3b)
     if ((valLeft >= 0) && ((valLeft <= valTop) || (valTop < 0)) && ((valLeft <= valRight) || (valRight < 0)))   {
         moveLeft();
         return;
@@ -1060,175 +1069,7 @@ void microMouseServer::leftHandRule()   {
         return;
     }
 
-  /*  if ((!myData[xPosition][yPosition].wallLeft && !myData[xPosition][yPosition].wallTop && !myData[xPosition][yPosition].wallRight && !myData[xPosition][yPosition].wallBottom) && (direction % 4 == 0) && ((myData[xPosition][yPosition+1].amount < myData[xPosition-1][yPosition].amount)))  {
-        yPosition = yPosition + 1;  //checks to see if at intersection with facing top and if the left path has been travelled but the top path has not
-        moveForward();
-    }
-    else if ((!myData[xPosition][yPosition].wallLeft && !myData[xPosition][yPosition].wallTop && !myData[xPosition][yPosition].wallRight && !myData[xPosition][yPosition].wallBottom) && ((direction - 1) % 4 == 0) && ((myData[xPosition+1][yPosition].amount < myData[xPosition][yPosition+1].amount)))   {
-        xPosition = xPosition + 1;  //facing right
-        moveForward();
-    }
-    else if ((!myData[xPosition][yPosition].wallLeft && !myData[xPosition][yPosition].wallTop && !myData[xPosition][yPosition].wallRight && !myData[xPosition][yPosition].wallBottom) && ((direction - 2) % 4 == 0) && ((myData[xPosition][yPosition-1].amount < myData[xPosition+1][yPosition].amount)))   {
-        yPosition = yPosition - 1;  //facing backwards
-        moveForward();
-    }
-    else if ((!myData[xPosition][yPosition].wallLeft && !myData[xPosition][yPosition].wallTop && !myData[xPosition][yPosition].wallRight && !myData[xPosition][yPosition].wallBottom) && ((direction + 1) % 4 == 0) && ((myData[xPosition-1][yPosition].amount < myData[xPosition][yPosition-1].amount)))   {
-        xPosition = xPosition - 1;  //facing left
-        moveForward();
-    }
 
-    else if ((!myData[xPosition][yPosition].wallLeft && !myData[xPosition][yPosition].wallTop && !myData[xPosition][yPosition].wallRight && !myData[xPosition][yPosition].wallBottom) && (direction % 4 == 0) && ((myData[xPosition+1][yPosition].amount < myData[xPosition-1][yPosition].amount) && (myData[xPosition+1][yPosition].amount < myData[xPosition][yPosition+1].amount)))  {
-        yPosition = yPosition + 1;  //checks to see if at intersection with facing top and if the left path and top path have been travelled but the right path has not
-        moveForward();
-    }
-    else if ((!myData[xPosition][yPosition].wallLeft && !myData[xPosition][yPosition].wallTop && !myData[xPosition][yPosition].wallRight && !myData[xPosition][yPosition].wallBottom) && ((direction - 1) % 4 == 0) && ((myData[xPosition][yPosition-1].amount < myData[xPosition][yPosition+1].amount) && (myData[xPosition][yPosition-1].amount < myData[xPosition+1][yPosition].amount)))    {
-        xPosition = xPosition + 1;  //facing right
-        moveForward();
-    }
-    else if ((!myData[xPosition][yPosition].wallLeft && !myData[xPosition][yPosition].wallTop && !myData[xPosition][yPosition].wallRight && !myData[xPosition][yPosition].wallBottom) && ((direction - 2) % 4 == 0) && ((myData[xPosition-1][yPosition].amount < myData[xPosition+1][yPosition].amount) && (myData[xPosition-1][yPosition].amount < myData[xPosition][yPosition-1].amount)))    {
-        yPosition = yPosition - 1;  //facing backwards
-        moveForward();
-    }
-    else if ((!myData[xPosition][yPosition].wallLeft && !myData[xPosition][yPosition].wallTop && !myData[xPosition][yPosition].wallRight && !myData[xPosition][yPosition].wallBottom) && ((direction + 1) % 4 == 0) && ((myData[xPosition][yPosition+1].amount < myData[xPosition][yPosition-1].amount) && (myData[xPosition][yPosition+1].amount < myData[xPosition-1][yPosition].amount)))    {
-        xPosition = xPosition - 1;  //facing left
-        moveForward();
-    }
-
-    else if ((myData[xPosition][yPosition].wallLeft && !myData[xPosition][yPosition].wallTop && !myData[xPosition][yPosition].wallRight && !myData[xPosition][yPosition].wallBottom) && (direction % 4 == 0) && ((myData[xPosition+1][yPosition].amount < myData[xPosition][yPosition+1].amount)))  {
-        xPosition = xPosition + 1;  //checks to see if at a t-junction with facing top and if the forward path has been travelled but the right has not
-        moveRight();
-        direction = direction + 1;
-    }
-    else if ((!myData[xPosition][yPosition].wallLeft && myData[xPosition][yPosition].wallTop && !myData[xPosition][yPosition].wallRight && !myData[xPosition][yPosition].wallBottom) && ((direction - 1) % 4 == 0) && ((myData[xPosition][yPosition-1].amount < myData[xPosition+1][yPosition].amount)))    {
-        yPosition = yPosition - 1;  //facing right
-        moveRight();
-        direction = direction + 1;
-    }
-    else if ((!myData[xPosition][yPosition].wallLeft && !myData[xPosition][yPosition].wallTop && myData[xPosition][yPosition].wallRight && !myData[xPosition][yPosition].wallBottom) && ((direction - 2) % 4 == 0) && ((myData[xPosition-1][yPosition].amount < myData[xPosition][yPosition-1].amount)))    {
-        xPosition = xPosition - 1;  //facing backwards
-        moveRight();
-        direction = direction + 1;
-    }
-    else if ((!myData[xPosition][yPosition].wallLeft && !myData[xPosition][yPosition].wallTop && !myData[xPosition][yPosition].wallRight && myData[xPosition][yPosition].wallBottom) && ((direction + 1) % 4 == 0) && ((myData[xPosition][yPosition+1].amount < myData[xPosition-1][yPosition].amount)))   {
-        yPosition = yPosition + 1;  //facing left
-        moveRight();
-        direction = direction + 1;
-    }
-
-    else if ((!myData[xPosition][yPosition].wallLeft && !myData[xPosition][yPosition].wallTop && myData[xPosition][yPosition].wallRight && !myData[xPosition][yPosition].wallBottom) && ((direction) % 4 == 0) && ((myData[xPosition][yPosition+1].amount < myData[xPosition-1][yPosition].amount)))   {
-        yPosition = yPosition + 1;  //t-junction w/facing top with left path travelled but not straight path
-        moveForward();
-    }
-    else if ((!myData[xPosition][yPosition].wallLeft && !myData[xPosition][yPosition].wallTop && !myData[xPosition][yPosition].wallRight && myData[xPosition][yPosition].wallBottom) && ((direction - 1) % 4 == 0) && ((myData[xPosition+1][yPosition].amount < myData[xPosition][yPosition+1].amount)))    {
-        xPosition = xPosition + 1;  //facing right
-        moveForward();
-    }
-    else if ((myData[xPosition][yPosition].wallLeft && !myData[xPosition][yPosition].wallTop && !myData[xPosition][yPosition].wallRight && !myData[xPosition][yPosition].wallBottom) && ((direction - 1) % 4 == 0) && ((myData[xPosition][yPosition-1].amount < myData[xPosition+1][yPosition].amount)))   {
-        yPosition = yPosition - 1;  //facing backwards
-        moveForward();
-    }
-    else if ((!myData[xPosition][yPosition].wallLeft && myData[xPosition][yPosition].wallTop && !myData[xPosition][yPosition].wallRight && !myData[xPosition][yPosition].wallBottom) && ((direction + 1) % 4 == 0) && ((myData[xPosition-1][yPosition].amount < myData[xPosition][yPosition-1].amount)))   {
-        xPosition = xPosition - 1;  //facing left
-        moveForward();
-    }
-
-    else if ((!myData[xPosition][yPosition].wallLeft && myData[xPosition][yPosition].wallTop && !myData[xPosition][yPosition].wallRight && !myData[xPosition][yPosition].wallBottom) && ((direction) % 4 == 0) && ((myData[xPosition+1][yPosition].amount < myData[xPosition-1][yPosition].amount)))   {
-        xPosition = xPosition + 1;  //t-junction w/facing top with left path travelled but not right path
-        moveRight();
-        direction = direction + 1;
-    }
-    else if ((!myData[xPosition][yPosition].wallLeft && !myData[xPosition][yPosition].wallTop && myData[xPosition][yPosition].wallRight && !myData[xPosition][yPosition].wallBottom) && ((direction - 1) % 4 == 0) && ((myData[xPosition][yPosition-1].amount < myData[xPosition][yPosition+1].amount)))   {
-        yPosition = yPosition - 1;  //facing right
-        moveRight();
-        direction = direction + 1;
-    }
-    else if ((!myData[xPosition][yPosition].wallLeft && !myData[xPosition][yPosition].wallTop && !myData[xPosition][yPosition].wallRight && myData[xPosition][yPosition].wallBottom) && ((direction - 2) % 4 == 0) && ((myData[xPosition-1][yPosition].amount < myData[xPosition+1][yPosition].amount)))   {
-        xPosition = xPosition - 1;  //facing bottom
-        moveRight();
-        direction = direction + 1;
-    }
-    else if ((myData[xPosition][yPosition].wallLeft && !myData[xPosition][yPosition].wallTop && !myData[xPosition][yPosition].wallRight && !myData[xPosition][yPosition].wallBottom) && ((direction + 1) % 4 == 0) && ((myData[xPosition][yPosition+1].amount < myData[xPosition][yPosition-1].amount)))   {
-        yPosition = yPosition + 1;  //facing left
-        moveRight();
-        direction = direction + 1;
-    }
-
-    else if (!isWallLeft() && direction % 4 == 0 && myData[xPosition-1][yPosition].amount != -1) {
-        xPosition = xPosition - 1;
-        moveLeft();
-        direction = direction - 1;
-    }
-    else if (!isWallLeft() && (direction - 1) % 4 == 0 && myData[xPosition][yPosition+1].amount != -1)  {
-        yPosition = yPosition + 1;
-        moveLeft();
-        direction = direction - 1;
-    }
-    else if (!isWallLeft() && (direction + 2) % 4 == 0 && myData[xPosition+1][yPosition].amount != -1)  {
-        xPosition = xPosition + 1;
-        moveLeft();
-        direction = direction - 1;
-    }
-    else if (!isWallLeft() && (direction + 1) % 4 == 0 && myData[xPosition][yPosition-1].amount != -1)  {
-        yPosition = yPosition - 1;
-        moveLeft();
-        direction = direction - 1;
-    }
-    else if (!isWallForward() && direction % 4 == 0 && myData[xPosition][yPosition+1].amount != -1) {
-        yPosition = yPosition + 1;
-        moveForward();
-    }
-    else if (!isWallForward() && (direction - 1) % 4 == 0 && myData[xPosition+1][yPosition].amount != -1)  {
-        xPosition = xPosition + 1;
-        moveForward();
-    }
-    else if (!isWallForward() && (direction + 2) % 4 == 0 && myData[xPosition][yPosition-1].amount != -1)  {
-        yPosition = yPosition - 1;
-        moveForward();
-    }
-    else if (!isWallForward() && (direction + 1) % 4 == 0 && myData[xPosition-1][yPosition].amount != -1)  {
-        xPosition = xPosition - 1;
-        moveForward();
-    }
-    else if (!isWallRight() && direction % 4 == 0 && myData[xPosition+1][yPosition].amount != -1) {
-        xPosition = xPosition + 1;
-        moveRight();
-        direction = direction + 1;
-    }
-    else if (!isWallRight() && (direction - 1) % 4 == 0 && myData[xPosition][yPosition-1].amount != -1)  {
-        yPosition = yPosition - 1;
-        moveRight();
-        direction = direction + 1;
-    }
-    else if (!isWallRight() && (direction + 2) % 4 == 0 && myData[xPosition-1][yPosition].amount != -1)  {
-        xPosition = xPosition - 1;
-        moveRight();
-        direction = direction + 1;
-    }
-    else if (!isWallRight() && (direction + 1) % 4 == 0 && myData[xPosition][yPosition+1].amount != -1)  {
-        yPosition = yPosition + 1;
-        moveRight();
-        direction = direction + 1;
-    }
-    else if (direction % 4 == 0 && myData[xPosition][yPosition-1].amount != -1) {
-        yPosition = yPosition - 1;
-        moveBack();
-        direction = direction - 2;
-    }
-    else if ((direction - 1) % 4 == 0 && myData[xPosition-1][yPosition].amount != -1)  {
-        xPosition = xPosition - 1;
-        moveBack();
-        direction = direction - 2;
-    }
-    else if ((direction + 2) % 4 == 0 && myData[xPosition][yPosition+1].amount != -1)  {
-        yPosition = yPosition + 1;
-        moveBack();
-        direction = direction - 2;
-    }
-    else if ((direction + 1) % 4 == 0 && myData[xPosition+1][yPosition].amount != -1)  {
-        xPosition = xPosition + 1;
-        moveBack();
-        direction = direction - 2;
-    }   */
 }
 
 void microMouseServer::checkExit(int xValue, int yValue)  { //if entry is from (side relative to the user) (which of two boxes entered in from)
@@ -1237,58 +1078,7 @@ void microMouseServer::checkExit(int xValue, int yValue)  { //if entry is from (
         exitXPosition = xValue;
         exitYPosition = yValue;
     }
-    /* if ((positionCurrent(xValue,yValue).wallLeft && !positionCurrent(xValue,yValue).wallTop && !positionCurrent(xValue,yValue).wallRight && !positionCurrent(xValue,yValue).wallBottom) && (positionTop(xValue,yValue).wallLeft && positionTop(xValue,yValue).wallTop && !positionTop(xValue,yValue).wallRight && !positionTop(xValue,yValue).wallBottom) && (!positionTopRight(xValue,yValue).wallLeft && positionTopRight(xValue,yValue).wallTop && positionTopRight(xValue,yValue).wallRight && !positionTopRight(xValue,yValue).wallBottom) && (!positionRight(xValue,yValue).wallLeft && !positionRight(xValue,yValue).wallTop && positionRight(xValue,yValue).wallRight && positionRight(xValue,yValue).wallBottom))       {
-        win = true;
-        exitXPosition = xValue;
-        exitYPosition = yValue;
-    }
-    else if ((!positionCurrent(xValue,yValue).wallLeft && !positionCurrent(xValue,yValue).wallTop && positionCurrent(xValue,yValue).wallRight && !positionCurrent(xValue,yValue).wallBottom) && (positionLeft(xValue,yValue).wallLeft && !positionLeft(xValue,yValue).wallTop && !positionLeft(xValue,yValue).wallRight && positionLeft(xValue,yValue).wallBottom) && (positionTopLeft(xValue,yValue).wallLeft && positionTopLeft(xValue,yValue).wallTop && !positionTopLeft(xValue,yValue).wallRight && positionTopRight(xValue,yValue).wallBottom) && (!positionTop(xValue,yValue).wallLeft && positionTop(xValue,yValue).wallTop && positionTop(xValue,yValue).wallRight && !positionTop(xValue,yValue).wallBottom)) {
-        win = true;
-        exitXPosition = xValue;
-        exitYPosition = yValue;
-    }*/
-/*
-    if (myData[xValue][yValue].wallLeft && !myData[xValue][yValue].wallTop && !myData[xValue][yValue].wallRight && !myData[xValue][yValue].wallBottom&& myData[xValue][yValue+1].wallLeft && myData[xValue][yValue+1].wallTop && !myData[xValue][yValue+1].wallRight && !myData[xValue][yValue+1].wallBottom&& !myData[xValue+1][yValue+1].wallLeft && myData[xValue+1][yValue+1].wallTop && myData[xValue+1][yValue+1].wallRight && !myData[xValue+1][yValue+1].wallBottom&& !myData[xValue+1][yValue].wallLeft && !myData[xValue+1][yValue].wallTop && myData[xValue+1][yValue].wallRight && myData[xValue+1][yValue].wallBottom)    {
-        win = true; //if entry is from bottom left
-        exitXPosition = xValue;
-        exitYPosition = yValue;
-    }
-    else if (!myData[xValue][yValue].wallLeft && myData[xValue][yValue].wallTop && !myData[xValue][yValue].wallRight && !myData[xValue][yValue].wallBottom&& !myData[xValue+1][yValue].wallLeft && myData[xValue+1][yValue].wallTop && myData[xValue+1][yValue].wallRight && !myData[xValue+1][yValue].wallBottom&& !myData[xValue+1][yValue-1].wallLeft && !myData[xValue+1][yValue-1].wallTop && myData[xValue+1][yValue-1].wallRight && myData[xValue+1][yValue-1].wallBottom&& myData[xValue][yValue-1].wallLeft && !myData[xValue][yValue-1].wallTop && !myData[xValue][yValue-1].wallRight && myData[xValue][yValue-1].wallBottom)    {
-        win = true; //if entry is from left top
-        exitXPosition = xValue;
-        exitYPosition = yValue;
-    }
-    else if (!myData[xValue][yValue].wallLeft && !myData[xValue][yValue].wallTop && myData[xValue][yValue].wallRight && !myData[xValue][yValue].wallBottom&& !myData[xValue][yValue-1].wallLeft && !myData[xValue][yValue-1].wallTop && myData[xValue][yValue-1].wallRight && myData[xValue][yValue-1].wallBottom&& myData[xValue-1][yValue-1].wallLeft && !myData[xValue-1][yValue-1].wallTop && !myData[xValue-1][yValue-1].wallRight && myData[xValue-1][yValue-1].wallBottom&& myData[xValue-1][yValue].wallLeft && myData[xValue-1][yValue].wallTop && !myData[xValue-1][yValue].wallRight && !myData[xValue-1][yValue].wallBottom) {
-        win = true; //if entry is from top right
-        exitXPosition = xValue;
-        exitYPosition = yValue;
-    }
-    else if (!myData[xValue][yValue].wallLeft && !myData[xValue][yValue].wallTop && !myData[xValue][yValue].wallRight && myData[xValue][yValue].wallBottom&& myData[xValue-1][yValue].wallLeft && !myData[xValue-1][yValue].wallTop && !myData[xValue-1][yValue].wallRight && myData[xValue-1][yValue].wallBottom&& myData[xValue-1][yValue+1].wallLeft && myData[xValue-1][yValue+1].wallTop && !myData[xValue-1][yValue+1].wallRight && !myData[xValue-1][yValue+1].wallBottom&& !myData[xValue][yValue+1].wallLeft && myData[xValue][yValue+1].wallTop && myData[xValue][yValue+1].wallRight && !myData[xValue][yValue+1].wallBottom)    {
-        win = true; //if entry is from right bottom
-        exitXPosition = xValue;
-        exitYPosition = yValue;
-    }
-    else if (!myData[xValue][yValue].wallLeft && !myData[xValue][yValue].wallTop && myData[xValue][yValue].wallRight && !myData[xValue][yValue].wallBottom&& !myData[xValue][yValue+1].wallLeft && myData[xValue][yValue+1].wallTop && myData[xValue][yValue+1].wallRight && !myData[xValue][yValue+1].wallBottom&& myData[xValue-1][yValue+1].wallLeft && myData[xValue-1][yValue+1].wallTop && !myData[xValue-1][yValue+1].wallRight && !myData[xValue-1][yValue+1].wallBottom&& myData[xValue-1][yValue].wallLeft && !myData[xValue-1][yValue].wallTop && !myData[xValue-1][yValue].wallRight && myData[xValue-1][yValue].wallBottom) {
-        win = true; //if entry is from bottom right
-        exitXPosition = xValue;
-        exitYPosition = yValue;
-    }
-    else if (!myData[xValue][yValue].wallLeft && !myData[xValue][yValue].wallTop && !myData[xValue][yValue].wallRight && myData[xValue][yValue].wallBottom&& !myData[xValue+1][yValue].wallLeft && !myData[xValue+1][yValue].wallTop && myData[xValue+1][yValue].wallRight && myData[xValue+1][yValue].wallBottom&& !myData[xValue+1][yValue+1].wallLeft && myData[xValue+1][yValue+1].wallTop && myData[xValue+1][yValue+1].wallRight && !myData[xValue+1][yValue+1].wallBottom&& myData[xValue][yValue+1].wallLeft && myData[xValue][yValue+1].wallTop && !myData[xValue][yValue+1].wallRight && !myData[xValue][yValue+1].wallBottom)    {
-        win = true; //if entry is from left bottom
-        exitXPosition = xValue;
-        exitYPosition = yValue;
-    }
-    else if (myData[xValue][yValue].wallLeft && !myData[xValue][yValue].wallTop && !myData[xValue][yValue].wallRight && !myData[xValue][yValue].wallBottom&& myData[xValue][yValue-1].wallLeft && !myData[xValue][yValue-1].wallTop && !myData[xValue][yValue-1].wallRight && myData[xValue][yValue-1].wallBottom&& !myData[xValue+1][yValue-1].wallLeft && !myData[xValue+1][yValue-1].wallTop && myData[xValue+1][yValue-1].wallRight && myData[xValue+1][yValue-1].wallBottom&& !myData[xValue+1][yValue].wallLeft && myData[xValue+1][yValue].wallTop && myData[xValue+1][yValue].wallRight && !myData[xValue+1][yValue].wallBottom) {
-        win = true; //if entry is from top left
-        exitXPosition = xValue;
-        exitYPosition = yValue;
-    }
-    else if (!myData[xValue][yValue].wallLeft && myData[xValue][yValue].wallTop && !myData[xValue][yValue].wallRight && !myData[xValue][yValue].wallBottom&& myData[xValue-1][yValue].wallLeft && myData[xValue-1][yValue].wallTop && !myData[xValue-1][yValue].wallRight && !myData[xValue-1][yValue].wallBottom&& myData[xValue-1][yValue-1].wallLeft && !myData[xValue-1][yValue-1].wallTop && !myData[xValue-1][yValue-1].wallRight && myData[xValue-1][yValue-1].wallBottom&& !myData[xValue][yValue-1].wallLeft && !myData[xValue][yValue-1].wallTop && myData[xValue][yValue-1].wallRight && myData[xValue][yValue-1].wallBottom)    {
-        win = true; //if entry is from right top
-        exitXPosition = xValue;
-        exitYPosition = yValue;
-    }
-    */
+
     if (myData[xValue][yValue].amount == 0) {
         populated = false;
     }
@@ -1326,8 +1116,8 @@ bool microMouseServer::isWallBack(int x, int y) {
     return myData[x][y].wallBottom;
 }
 
-bool microMouseServer::isExit(mazeCell* cell)   {
-    if ((exitXPosition == cell->x) && (exitYPosition == cell->y))   {
+bool microMouseServer::isEnd(MazeCell* cell, int x, int y)   {
+    if ((x == cell->x) && (y == cell->y))   {
         return true;
     }
     else    {
@@ -1336,23 +1126,23 @@ bool microMouseServer::isExit(mazeCell* cell)   {
 }
 
 
-mazeCell& microMouseServer::positionCurrent(int x, int y)   {
+MazeCell& microMouseServer::positionCurrent(int x, int y)   {
     return myData[x][y];
 }
 
-mazeCell& microMouseServer::positionLeft(int x, int y)  {
+MazeCell& microMouseServer::positionLeft(int x, int y)  {
     return myData[x-1][y];
 }
 
-mazeCell& microMouseServer::positionTop(int x, int y)   {
+MazeCell& microMouseServer::positionTop(int x, int y)   {
     return myData[x][y+1];
 }
 
-mazeCell& microMouseServer::positionRight(int x, int y) {
+MazeCell& microMouseServer::positionRight(int x, int y) {
     return myData[x+1][y];
 }
 
-mazeCell& microMouseServer::positionBottom(int x, int y)    {
+MazeCell& microMouseServer::positionBottom(int x, int y)    {
     return myData[x][y-1];
 }
 
@@ -1373,6 +1163,16 @@ int microMouseServer::amountBottom(int x, int y)    {
     return isWallBack(x,y) ? -3 : positionBottom(x,y).amount;
 }
 
+
+void microMouseServer::resetCosts() {
+    for (int i = 0; i < MAZE_WIDTH; i++)    {
+        for (int j = 0; j < MAZE_HEIGHT; j++)   {
+            myData[i][j].fCost = -10;
+            myData[i][j].gCost = -10;
+            myData[i][j].hCost = -10;
+        }
+    }
+}
 
 void microMouseServer::setAdjacentCosts(int x, int y)   {
 
@@ -1498,18 +1298,11 @@ void microMouseServer::setAdjacentCosts(int x, int y)   {
 }
 
 
-void microMouseServer::shellSort(QVector <mazeCell*> * array)  {
+void microMouseServer::shellSort(QVector <MazeCell*> * array)  {
     for (int gap = array->size()/2; gap > 0; gap /= 2)   {
         for (int i = gap; i < array->size(); i++)    {
-            for (int j=i-gap; j>=0 && &array->at(j)->fCost < &array->at(j+gap)->fCost; j-=gap) {
-                /*
-                std::swap(array[j],array[j+gap]);
-                */
-                /*
-                std::swap(array->at(j),array->at(j+gap)); //no viable overloaded '=', ERROR NOT EVEN IN THIS CLASS
-                */
-
-                mazeCell* temp = array->at(j);
+            for (int j=i-gap; j>=0 && &array->at(j)->fCost > &array->at(j+gap)->fCost; j-=gap) {
+                MazeCell* temp = array->at(j);
                 array->replace(j,array->at(j+gap));
                 array->replace(j+gap,temp);
 
@@ -1519,16 +1312,16 @@ void microMouseServer::shellSort(QVector <mazeCell*> * array)  {
     return;
 }
 
-void microMouseServer::insertionSort(QVector <mazeCell*> *array) {
-      for (int i = 1; i < array->size(); i++)   {
-            int j = i;
-            while (j > 0 && array->at(j - 1) > array->at(j)) {
-                  mazeCell *temp = array->at(j);
-                  array->replace(j,array->at(j-1));
-                  array->replace(j - 1, temp);
-                  j--;
-            }
-      }
+void microMouseServer::insertionSort(QVector <MazeCell*> *array) {
+    for (int i = 1; i < array->size(); i++)   {
+        int j = i;
+        while (j > 0 && array->at(j - 1)->fCost > array->at(j)->fCost) {
+            MazeCell *temp = array->at(j);
+            array->replace(j,array->at(j-1));
+            array->replace(j - 1, temp);
+            j--;
+        }
+    }
 }
 
 
@@ -1541,15 +1334,15 @@ void microMouseServer::removeChecked()  {
 void microMouseServer::zeroValues(int x, int y)  {
     if ((x == 0) && (y == 0))   {
         positionCurrent(x,y).gCost = 0;
-        positionCurrent(x,y).hCost = (abs(x - exitXPosition) + abs(y - exitYPosition))*10;
+        positionCurrent(x,y).hCost = sqrt(pow(x - exitXPosition,2) + pow(y - exitYPosition,2))*10;
         positionCurrent(x,y).fCost = positionCurrent(x,y).gCost + positionCurrent(x,y).hCost;
         closedset->append(&positionCurrent(x,y));
     }
     return;
 }
 
-void microMouseServer::shortestPathDirections() {
-    QVector <mazeCell*> * possibilities = new QVector <mazeCell*>;
+void microMouseServer::shortestPathDirections(int x, int y) {
+    QVector <MazeCell*> * possibilities = new QVector <MazeCell*>;
 
     for (int i = closedset->last()->gCost; i >= 0; i = i - 10)  {   //if the movement cost is one less than the last checked, then add it to the list of possibilities
         for (int j = 0; j < closedset->size(); j++) {
@@ -1560,22 +1353,18 @@ void microMouseServer::shortestPathDirections() {
 
         for (int k = 0; k < possibilities->size(); k++) {   //if the possibility isn't adjacent to the last checked cell, remove it
             if (!shortestDirections->empty())   {
-                if (!(shortestDirections->first()->isAdjacent(possibilities->at(k))))   {
+                if (!(shortestDirections->first()->isAdjacent(possibilities->at(k),amountLeft(shortestDirections->first()->x,shortestDirections->first()->y),amountTop(shortestDirections->first()->x,shortestDirections->first()->y),amountRight(shortestDirections->first()->x,shortestDirections->first()->y),amountBottom(shortestDirections->first()->x,shortestDirections->first()->y)))) {
                     possibilities->remove(k);
                     k--;
                 }
             }
             else    {
-                if (!(isExit(possibilities->at(k))))    {   //when the vector is empty, the first value to populate it will be the exit
+                if (!(isEnd(possibilities->at(k),x,y)))    {   //when the vector is empty, the first value to populate it will be the exit
                     possibilities->remove(k);
                     k--;
                 }
             }
         }
-
-//        if (possibilities->size() > 1)  {
-//            insertionSort(possibilities);
-//        }
 
         shortestDirections->insert(0,possibilities->at(0));
         shortestDirections->first()->amount = 0;
@@ -1607,24 +1396,25 @@ bool microMouseServer::atExit() {
 }
 
 
-void microMouseServer::shortestPathFinder(int x, int y) {
-    zeroValues(x,y);
-    setAdjacentCosts(x,y);
-    shellSort(openset);
+void microMouseServer::shortestPathFinder(int xStart, int yStart, int xEnd, int yEnd) {
+    zeroValues(xStart,yStart);
+    setAdjacentCosts(xStart,yStart);
+    insertionSort(openset);
     removeChecked();
-    if (closedset->last() == &myData[exitXPosition][exitYPosition]) {
-        shortestPathDirections();
+    if (closedset->last() == &myData[xEnd][yEnd]) {
+        shortestPathDirections(xEnd,yEnd);
     }
     else    {
-        shortestPathFinder(closedset->last()->x,closedset->last()->y);
+        shortestPathFinder(closedset->last()->x,closedset->last()->y,xEnd,yEnd);
     }
     return;
 }
 
 
 void microMouseServer::secondRun()  {
+
     if (shortestDirections->empty())    {
-        shortestPathFinder(0,0);
+        shortestPathFinder(0,0,exitXPosition,exitYPosition);
     }
     navigateShortestPath();
     if (atExit())   {
@@ -1633,142 +1423,41 @@ void microMouseServer::secondRun()  {
     return;
 }
 
-/*
-
-void microMouseServer::shortPathFinder()    {
-
-    while (!finishedPossibilities)  {
-
-        if (!myData[xPosition2][yPosition2].wallLeft && !myData[xPosition2][yPosition2].wallTop && !!myData[xPosition2][yPosition2].wallRight && direction == 0)    {
-            listOfPaths.insert(listOfPaths.size(),0);
-        }
-
-        //checking left when facing
-        if (!myData[xPosition2][yPosition2].wallLeft && direction2 % 4 == 0 && myData[xPosition2-1][yPosition2].amount != -1) {
-            xPosition2 = xPosition2 - 1;    //top
-            direction2 = direction2 - 1;
-        }
-        else if (!myData[xPosition2][yPosition2].wallTop && (direction2 - 1) % 4 == 0 && myData[xPosition2][yPosition2+1].amount != -1)  {
-            yPosition2 = yPosition2 + 1;    //right
-            direction2 = direction2 - 1;
-        }
-        else if (!myData[xPosition2][yPosition2].wallRight && (direction2 + 2) % 4 == 0 && myData[xPosition2+1][yPosition2].amount != -1)  {
-            xPosition2 = xPosition2 + 1;    //bottom
-            direction2 = direction2 - 1;
-        }
-        else if (!myData[xPosition2][yPosition2].wallBottom && (direction2 + 1) % 4 == 0 && myData[xPosition2][yPosition2-1].amount != -1)  {
-            yPosition2 = yPosition2 - 1;    //left
-            direction2 = direction2 - 1;
-        }
-
-        //checking top when facing
-        else if (!myData[xPosition2][yPosition2].wallTop && direction2 % 4 == 0 && myData[xPosition2][yPosition2+1].amount != -1) {
-            yPosition2 = yPosition2 + 1;    //top
-        }
-        else if (!myData[xPosition2][yPosition2].wallRight && (direction2 - 1) % 4 == 0 && myData[xPosition2+1][yPosition2].amount != -1)  {
-            xPosition2 = xPosition2 + 1;    //right
-        }
-        else if (!myData[xPosition2][yPosition2].wallBottom && (direction2 + 2) % 4 == 0 && myData[xPosition2][yPosition2-1].amount != -1)  {
-            yPosition2 = yPosition2 - 1;    //bottom
-        }
-        else if (!myData[xPosition2][yPosition2].wallLeft && (direction2 + 1) % 4 == 0 && myData[xPosition2-1][yPosition2].amount != -1)  {
-            xPosition2 = xPosition2 - 1;    //left
-        }
-
-        //checking right when facing
-        else if (!myData[xPosition2][yPosition2].wallRight && direction2 % 4 == 0 && myData[xPosition2+1][yPosition2].amount != -1) {
-            xPosition2 = xPosition2 + 1;    //top
-            direction2 = direction2 + 1;
-        }
-        else if (!myData[xPosition2][yPosition2].wallBottom && (direction2 - 1) % 4 == 0 && myData[xPosition2][yPosition2-1].amount != -1)  {
-            yPosition2 = yPosition2 - 1;    //right
-            direction2 = direction2 + 1;
-        }
-        else if (!myData[xPosition2][yPosition2].wallLeft && (direction2 + 2) % 4 == 0 && myData[xPosition2-1][yPosition2].amount != -1)  {
-            xPosition2 = xPosition2 - 1;    //bottom
-            direction2 = direction2 + 1;
-        }
-        else if (!myData[xPosition2][yPosition2].wallTop && (direction2 + 1) % 4 == 0 && myData[xPosition2][yPosition2+1].amount != -1)  {
-            yPosition2 = yPosition2 + 1;    //left
-            direction2 = direction2 + 1;
-        }
-
-        //checking bottom when facing
-        else if (!myData[xPosition2][yPosition2].wallBottom && direction2 % 4 == 0 && myData[xPosition2][yPosition2-1].amount != -1) {
-            yPosition2 = yPosition2 - 1;    //top
-            direction2 = direction2 - 2;
-        }
-        else if (!myData[xPosition2][yPosition2].wallLeft && (direction2 - 1) % 4 == 0 && myData[xPosition2-1][yPosition2].amount != -1)  {
-            xPosition2 = xPosition2 - 1;    //right
-            direction2 = direction2 - 2;
-        }
-        else if (!myData[xPosition2][yPosition2].wallTop && (direction2 + 2) % 4 == 0 && myData[xPosition2][yPosition2+1].amount != -1)  {
-            yPosition2 = yPosition2 + 1;    //bottom
-            direction2 = direction2 - 2;
-        }
-        else if (!myData[xPosition2][yPosition2].wallRight && (direction2 + 1) % 4 == 0 && myData[xPosition2+1][yPosition2].amount != -1)  {
-            xPosition2 = xPosition2 + 1;    //left
-            direction2 = direction2 - 2;
-        }
-
-
-
-        finishedPossibilities == true;
-        for (int k = 0; k < listOfPaths.size(); i++)    {
-            if (listOfPaths.at(k) != 2) {
-                finishedPossibilities = false;
-            }
-        }
-    }
-}
-
-*/
 
 void microMouseServer::studentAI()
 {
+    //Cell map[MAZE_WIDTH][MAZE_HEIGHT];
+    //generateMaze();
+
     if (populated && xPosition == 0 && yPosition == 0)  {
         finishedMapping = true;
     }
-    /*
-    if (populated && (xPosition == 0 && yPosition == 0))    {
-        atStart = true;
-    }
-    */
-    /*
-    if (!populated || !(xPosition == exitXPosition && yPosition == exitYPosition)) {
+
+    if (!(populated)) {
         firstRun();
     }
-    if (!populated || !(xPosition == 0 && yPosition == 0)) {
-        firstRun();
+
+    else if (!(finishedMapping))    {
+
+        if (shortestDirections->empty())    {
+            shortestPathFinder(xPosition,yPosition,0,0);
+        }
+        navigateShortestPath();
     }
-    */
-    if (!(finishedMapping)) {
-        firstRun();
-    }
-   /* else    {
-        ui->txt_status->append("I have found the exit");
-        ui->txt_status->append("It is located at (" + QString::number(exitXPosition) + "," + QString::number(exitYPosition) + ")");
-    } */
+
     else    {
+        if (!entered)   {
+            openset->clear();
+            closedset->clear();
+            shortestDirections->clear();
+
+            resetCosts();
+            entered = true;
+        }
         secondRun();
     }
-    /*
-    if (populated && xPosition == exitXPosition && yPosition == exitYPosition)   {
-        ui->txt_status->append("I have found the exit");
-        ui->txt_status->append("It is located at (" + QString::number(exitXPosition) + "," + QString::number(exitYPosition) + ")");
-        foundFinish();
-    }
-    */
-    /*
-    if (win == true)    {
-        printUI("I have found the exit");
-        printUI(("It is located at (" + QString::number(exitXPosition) + "," + QString::number(exitYPosition) + ")"));
-        foundFinish();
-    }
-    */
-/*
-    if (myData[exitXPosition][exitYPosition].amount == 3)   {
-        _aiCallTimer->stop();
-    }*/
+
     return;
 }
+
+

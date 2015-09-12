@@ -9,6 +9,7 @@
 #include <QPainter>
 #include <QPoint>
 #include <QStyleOptionGraphicsItem>
+#include <cell.h>
 
 class mazeGui : public QGraphicsScene
 {
@@ -18,6 +19,7 @@ public:
     ~mazeGui();
     virtual void mousePressEvent(QGraphicsSceneMouseEvent * mouseEvent);
     QPen wallPen();
+
 
     QGraphicsItemGroup *mazeWalls;
 
